@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jeu d'émergence — Agents</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#0f1724;--accent:#22c1c3;--muted:#93a3b8}
+    html,body{height:100%;margin:0;background:var(--bg);color:#e6eef6;font-family:Inter, system-ui, Arial}
+    #app{display:grid;grid-template-columns:1fr 320px;gap:12px;height:100vh;padding:12px;box-sizing:border-box}
+    canvas{background:linear-gradient(180deg,#061024,transparent);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);padding:12px;border-radius:12px;min-height:0}
+    h1{font-size:18px;margin:0 0 8px}
+    label{display:block;font-size:13px;color:var(--muted);margin-top:8px}
+    input[type=range], input[type=number], select{width:100%}
+    .row{display:flex;gap:8px;align-items:center}
+    .btn{display:inline-block;padding:8px 10px;border-radius:8px;background:var(--panel);border:1px solid rgba(255,255,255,.03);cursor:pointer}
+    footer{font-size:12px;color:var(--muted);margin-top:12px}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <canvas id="world"></canvas>
+      <div class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+        <div>
+          <strong id="population">Population: 0</strong>
+          <div id="info" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="play" class="btn">Pause</button>
+          <button id="step" class="btn">+1 tick</button>
+          <button id="reset" class="btn">Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h1>Contrôles</h1>
+      <label>Nombre initial d'agents
+        <input id="initN" type="number" min="0" max="1000" value="120" />
+      </label>
+
+      <label>Rayon de perception
+        <input id="perception" type="range" min="20" max="220" value="80" />
+      </label>
+
+      <label>Force séparation
+        <input id="sep" type="range" min="0" max="3" step="0.05" value="1.2" />
+      </label>
+
+      <label>Force alignement
+        <input id="align" type="range" min="0" max="3" step="0.05" value="1.0" />
+      </label>
+
+      <label>Force cohésion
+        <input id="coh" type="range" min="0" max="3" step="0.05" value="0.6" />
+      </label>
+
+      <label>Taux de mutation (chance qu'un descendant change d'attribut)
+        <input id="mut" type="range" min="0" max="0.5" step="0.01" value="0.03" />
+      </label>
+
+      <label>Vitesse max
+        <input id="maxSpeed" type="range" min="0.1" max="6" step="0.1" value="2.2" />
+      </label>
+
+      <label>Type d'emoji (appuyez sur le canvas pour spawn)
+        <select id="emojiSelect">
+          <option>😀</option>
+          <option>😎</option>
+          <option>😭</option>
+          <option>🤖</option>
+          <option>🦋</option>
+          <option>🐝</option>
+        </select>
+      </label>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="add50" class="btn">+50 agents</button>
+        <button id="rem50" class="btn">-50 agents</button>
+      </div>
+
+      <footer>
+        Principe d'émergence: des règles locales simples (séparation, alignement, cohésion, reproduction) produisent des comportements collectifs imprévus. Cliquez sur le terrain pour créer un attracteur; shift+click pour un répulseur.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+  // Jeu d'émergence - Agents (Boids + reproduction + traits héritables)
+  // Auteur: généré par ChatGPT
+
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = Math.floor((innerWidth - 360) * devicePixelRatio);
+    canvas.height = Math.floor((innerHeight - 36) * devicePixelRatio);
+    canvas.style.width = ((innerWidth - 360)) + 'px';
+    canvas.style.height = ((innerHeight - 36)) + 'px';
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  // Helpers
+  function rand(a,b){return a + Math.random()*(b-a)}
+  function limit(v,max){const m = Math.hypot(v.x,v.y); if(m>max){v.x=v.x/m*max; v.y=v.y/m*max}} 
+  function dist(a,b){const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy)}
+
+  class Agent{
+    constructor(x,y,trait){
+      this.x = x; this.y = y;
+      const angle = Math.random()*Math.PI*2;
+      this.vx = Math.cos(angle)*rand(0.5,1.5);
+      this.vy = Math.sin(angle)*rand(0.5,1.5);
+      this.size = 10 + Math.random()*6;
+      // Traits: influence how agents behave; they are inheritable and subject to mutation
+      this.trait = trait || {
+        emoji: document.getElementById('emojiSelect').value,
+        sociability: Math.random()*1.6, // how strongly they align/cohere
+        boldness: Math.random()*1.6,    // how much they explore
+        fertility: 0.01 + Math.random()*0.06 // chance to reproduce each tick
+      };
+      this.age = 0;
+      this.energy = 1 + Math.random()*2; // energy for reproduction
+    }
+
+    step(nearby, params, attractors){
+      // Basic boids rules with trait modulation
+      const sep = {x:0,y:0}; let sepCount=0;
+      const ali = {x:0,y:0}; let aliCount=0;
+      const coh = {x:0,y:0}; let cohCount=0;
+
+      for(const o of nearby){
+        const d = dist(this,o);
+        if(d>0 && d < params.perception){
+          // separation
+          if(d < params.perception*0.4){ sep.x += (this.x - o.x)/d; sep.y += (this.y - o.y)/d; sepCount++; }
+          // alignment
+          ali.x += o.vx; ali.y += o.vy; aliCount++;
+          // cohesion
+          coh.x += o.x; coh.y += o.y; cohCount++;
+        }
+      }
+
+      if(sepCount){ sep.x/=sepCount; sep.y/=sepCount; }
+      if(aliCount){ ali.x/=aliCount; ali.y/=aliCount; }
+      if(cohCount){ coh.x/=cohCount; coh.y/=cohCount; coh.x = (coh.x - this.x); coh.y = (coh.y - this.y); }
+
+      // Influence by traits
+      const sociability = this.trait.sociability;
+      const boldness = this.trait.boldness;
+
+      // Weighted forces
+      this.vx += sep.x * params.sep * 1.5;
+      this.vy += sep.y * params.sep * 1.5;
+
+      this.vx += ali.x * params.align * sociability;
+      this.vy += ali.y * params.align * sociability;
+
+      this.vx += coh.x * params.coh * sociability;
+      this.vy += coh.y * params.coh * sociability;
+
+      // small random exploration based on boldness
+      this.vx += (Math.random()-0.5) * 0.2 * boldness;
+      this.vy += (Math.random()-0.5) * 0.2 * boldness;
+
+      // react to attractors/repulsors
+      for(const a of attractors){
+        const d = Math.hypot(this.x-a.x, this.y-a.y);
+        if(d < a.radius){
+          const f = (1 - d/a.radius) * a.strength;
+          this.vx += (a.x - this.x)/d * f;
+          this.vy += (a.y - this.y)/d * f;
+        }
+      }
+
+      // movement
+      limit(this, params.maxSpeed);
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // bounds wrap
+      if(this.x < -10) this.x = canvas.width/devicePixelRatio + 10;
+      if(this.x > canvas.width/devicePixelRatio + 10) this.x = -10;
+      if(this.y < -10) this.y = canvas.height/devicePixelRatio + 10;
+      if(this.y > canvas.height/devicePixelRatio + 10) this.y = -10;
+
+      this.age++;
+      this.energy -= 0.001; // maintenance cost
+    }
+
+    tryReproduce(agents, params){
+      if(Math.random() < this.trait.fertility && Math.random() < params.reproductionRate && this.energy > 0.9){
+        // find partner nearby with some probability
+        const partner = agents[Math.floor(Math.random()*agents.length)];
+        if(partner && dist(this,partner) < params.perception*0.8){
+          // child inherits averaged traits with mutation
+          const childTrait = {
+            emoji: Math.random()<0.5? this.trait.emoji : partner.trait.emoji,
+            sociability: (this.trait.sociability + partner.trait.sociability)/2,
+            boldness: (this.trait.boldness + partner.trait.boldness)/2,
+            fertility: (this.trait.fertility + partner.trait.fertility)/2
+          };
+          // mutation
+          if(Math.random() < params.mutation){ childTrait.sociability += rand(-0.2,0.2); }
+          if(Math.random() < params.mutation){ childTrait.boldness += rand(-0.2,0.2); }
+          if(Math.random() < params.mutation){ childTrait.fertility += rand(-0.01,0.01); }
+          // clamp
+          childTrait.sociability = Math.max(0, Math.min(3, childTrait.sociability));
+          childTrait.boldness = Math.max(0, Math.min(3, childTrait.boldness));
+          childTrait.fertility = Math.max(0.001, Math.min(1, childTrait.fertility));
+
+          // place child near parents
+          const nx = (this.x + partner.x)/2 + rand(-6,6);
+          const ny = (this.y + partner.y)/2 + rand(-6,6);
+          const child = new Agent(nx, ny, childTrait);
+          // split energy cost
+          this.energy *= 0.6; partner.energy *= 0.6; child.energy = 0.9;
+          agents.push(child);
+        }
+      }
+    }
+
+    draw(ctx){
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      // rotate in movement direction
+      const angle = Math.atan2(this.vy, this.vx);
+      ctx.rotate(angle);
+      ctx.font = Math.round(this.size)+'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.trait.emoji, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // Simulation state
+  let agents = [];
+  let attractors = []; // {x,y,strength,radius}
+
+  const params = {
+    perception: 80,
+    sep: 1.2,
+    align: 1.0,
+    coh: 0.6,
+    mutation: 0.03,
+    maxSpeed: 2.2,
+    reproductionRate: 0.35
+  };
+
+  // Spatial hashing for neighbor lookup (simple grid)
+  function buildGrid(){
+    const cell = Math.max(40, params.perception);
+    const cols = Math.ceil(canvas.width/devicePixelRatio / cell);
+    const rows = Math.ceil(canvas.height/devicePixelRatio / cell);
+    const grid = new Array(cols*rows);
+    for(let i=0;i<grid.length;i++) grid[i]=[];
+    const key = (x,y)=> Math.floor(x/cell) + Math.floor(y/cell)*cols;
+    for(const a of agents){
+      const k = key(a.x,a.y);
+      if(k>=0 && k<grid.length) grid[k].push(a);
+    }
+    return {grid,cell,cols,rows,key};
+  }
+
+  function neighborsOf(agent, G){
+    const c = Math.max(1, Math.floor(params.perception / G.cell));
+    const gx = Math.floor(agent.x / G.cell);
+    const gy = Math.floor(agent.y / G.cell);
+    const res = [];
+    for(let rx = gx-c; rx<=gx+c; rx++){
+      for(let ry = gy-c; ry<=gy+c; ry++){
+        const k = rx + ry*G.cols;
+        if(k>=0 && k<G.grid.length){
+          const bucket = G.grid[k];
+          for(const b of bucket) if(b !== agent) res.push(b);
+        }
+      }
+    }
+    return res;
+  }
+
+  // Initialize population
+  function init(n){
+    agents = [];
+    attractors = [];
+    for(let i=0;i<n;i++) agents.push(new Agent(rand(10, canvas.width/devicePixelRatio-10), rand(10, canvas.height/devicePixelRatio-10)));
+  }
+
+  // UI bindings
+  const popEl = document.getElementById('population');
+  const infoEl = document.getElementById('info');
+  document.getElementById('initN').addEventListener('change', e=>{});
+  document.getElementById('perception').addEventListener('input', e=> params.perception = Number(e.target.value));
+  document.getElementById('sep').addEventListener('input', e=> params.sep = Number(e.target.value));
+  document.getElementById('align').addEventListener('input', e=> params.align = Number(e.target.value));
+  document.getElementById('coh').addEventListener('input', e=> params.coh = Number(e.target.value));
+  document.getElementById('mut').addEventListener('input', e=> params.mutation = Number(e.target.value));
+  document.getElementById('maxSpeed').addEventListener('input', e=> params.maxSpeed = Number(e.target.value));
+
+  document.getElementById('add50').addEventListener('click', ()=>{ for(let i=0;i<50;i++) agents.push(new Agent(rand(10, canvas.width/devicePixelRatio-10), rand(10, canvas.height/devicePixelRatio-10))); });
+  document.getElementById('rem50').addEventListener('click', ()=>{ agents.splice(0,50); });
+
+  document.getElementById('play').addEventListener('click', ()=>{ running = !running; document.getElementById('play').textContent = running? 'Pause' : 'Play'; });
+  document.getElementById('reset').addEventListener('click', ()=>{ init(Number(document.getElementById('initN').value)); });
+  document.getElementById('step').addEventListener('click', ()=>{ stepSim(); render(); });
+
+  canvas.addEventListener('click', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left);
+    const y = (e.clientY - rect.top);
+    if(e.shiftKey){ // repulse
+      attractors.push({x,y,strength:-1.6,radius:120});
+      setTimeout(()=>{ attractors.shift(); }, 3000);
+    } else { // attract
+      attractors.push({x,y,strength:1.8,radius:140});
+      setTimeout(()=>{ attractors.shift(); }, 3000);
+    }
+  });
+
+  // Simulation tick
+  function stepSim(){
+    const G = buildGrid();
+    const copyAgents = agents.slice();
+    for(const a of copyAgents){
+      const nb = neighborsOf(a, G);
+      a.step(nb, params, attractors);
+    }
+    // reproduction phase
+    for(const a of copyAgents){
+      a.tryReproduce(agents, {perception: params.perception, mutation: params.mutation, reproductionRate: params.reproductionRate});
+    }
+    // remove dead (if any) and cap population
+    if(agents.length > 2000){ agents.length = 2000; }
+  }
+
+  // Render
+  function render(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // background subtle stars
+    for(let i=0;i<40;i++){
+      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      const sx = (i*12997)% (canvas.width/devicePixelRatio);
+      const sy = ((i*9301)+73) % (canvas.height/devicePixelRatio);
+      ctx.fillRect(sx,sy,1,1);
+    }
+
+    // draw attractors
+    for(const a of attractors){
+      ctx.beginPath(); ctx.arc(a.x, a.y, a.radius, 0, Math.PI*2); ctx.strokeStyle = 'rgba(200,240,255,0.06)'; ctx.stroke();
+    }
+
+    for(const a of agents){ a.draw(ctx); }
+
+    // HUD
+    popEl.textContent = 'Population: ' + agents.length;
+    infoEl.textContent = `Perception ${Math.round(params.perception)} · sep ${params.sep.toFixed(2)} · align ${params.align.toFixed(2)} · coh ${params.coh.toFixed(2)} · mutation ${params.mutation}`;
+  }
+
+  // Loop
+  let running = true;
+  function loop(){ if(running){ stepSim(); } render(); requestAnimationFrame(loop); }
+
+  // Start
+  init(Number(document.getElementById('initN').value || 120));
+  loop();
+
+  // expose for debugging
+  window._agents = agents; window._params = params; window._attractors = attractors;
+  </script>
+</body>
+</html>
