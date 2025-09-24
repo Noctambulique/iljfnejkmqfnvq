@@ -1,105 +1,157 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ouverture de Paquets - Jeu de Cartes</title>
 <style>
+  /* Reset simple */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
-    font-family: Arial, sans-serif;
-    background: #f3f4f6;
-    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #4f46e5, #6366f1);
+    color: #fff;
+    min-height: 100vh;
     padding: 20px;
   }
-  h1, h2 {
+
+  h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .controls {
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .controls input[type=number] {
+    width: 60px;
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
     text-align: center;
   }
-  .controls {
-    max-width: 900px;
-    margin: 10px auto;
-    background: white;
-    padding: 15px;
+
+  button {
+    padding: 10px 18px;
+    border: none;
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    background: #fff;
+    color: #4f46e5;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
   }
-  .pack {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-    margin-top: 15px;
+
+  button:hover {
+    background: #4f46e5;
+    color: #fff;
+    transform: scale(1.05);
   }
+
+  #overlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .pack-image {
+    width: 220px; height: 300px;
+    background: url('https://via.placeholder.com/220x300?text=PAQUET') center/cover;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(255,255,255,0.5);
+    transition: transform 0.3s ease;
+  }
+
+  .pack-image:hover {
+    transform: scale(1.05);
+  }
+
+  .big-card {
+    width: 260px; height: 360px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 0 40px rgba(255,255,255,0.8);
+    text-align: center;
+    cursor: pointer;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .big-card img {
+    width: 100%; height: 85%;
+    border-radius: 20px 20px 0 0;
+    object-fit: cover;
+  }
+
+  #collectionContainer {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
   .collection-category {
-    max-width: 900px;
-    margin: 15px auto;
+    margin-bottom: 30px;
   }
+
   .collection-title {
-    margin: 10px 0;
-    font-size: 1.2em;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
+
   .collection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
   }
+
   .card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    text-align: center;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    height: 180px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 15px;
+    height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    transition: all 0.3s ease;
   }
+
   .card img {
     width: 100%;
     height: 160px;
     object-fit: cover;
+    border-radius: 15px 15px 0 0;
   }
-  .rarity {
-    font-size: 0.8em;
-    color: #555;
-  }
-  button {
-    margin: 5px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    background: #4f46e5;
-    color: white;
-    cursor: pointer;
-  }
-  .overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  .pack-image {
-    width: 200px; height: 280px;
-    background: url('https://via.placeholder.com/200x280?text=PAQUET') center/cover;
-    border-radius: 10px;
-    cursor: pointer;
+
+  .card:hover {
+    transform: scale(1.05);
+    border-color: #fff;
     box-shadow: 0 0 20px rgba(255,255,255,0.5);
   }
-  .big-card {
-    width: 250px; height: 350px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 0 30px rgba(255,255,255,0.8);
+
+  .card div {
+    margin-top: 5px;
+    font-weight: bold;
     text-align: center;
-    cursor: pointer;
-  }
-  .big-card img {
-    width: 100%; height: 85%;
-    object-fit: cover;
-    border-radius: 10px 10px 0 0;
   }
 </style>
 </head>
@@ -108,14 +160,9 @@
 <h1>Ouverture de Paquets</h1>
 
 <div class="controls">
-  <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
+  <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20"></label>
   <button onclick="showPackOverlay()">Ouvrir un paquet</button>
   <button onclick="resetCollection()">Réinitialiser la collection</button>
-</div>
-
-<div class="controls">
-  <h2>Dernier paquet ouvert</h2>
-  <div id="lastPack" class="pack"></div>
 </div>
 
 <div id="overlay" class="overlay" style="display:none">
@@ -186,20 +233,8 @@ function revealNextCard() {
       </div>`;
   } else {
     document.getElementById('overlay').style.display = 'none';
-    renderLastPack(revealQueue);
     renderCollection();
   }
-}
-
-function renderLastPack(pack) {
-  const container = document.getElementById('lastPack');
-  container.innerHTML = '';
-  pack.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity}</div>`;
-    container.appendChild(el);
-  });
 }
 
 function renderCollection() {
@@ -208,8 +243,9 @@ function renderCollection() {
   const categories = ['commune','rare','mythique','triadique'];
 
   categories.forEach(rarity => {
-    const cardsInRarity = CARDS.filter(c => c.rarity === rarity && collection[c.id]);
-    if(cardsInRarity.length > 0) {
+    const cardsInRarity = CARDS.filter(c => collection[c.id]);
+    const filtered = cardsInRarity.filter(c => c.rarity === rarity);
+    if(filtered.length > 0) {
       const catDiv = document.createElement('div');
       catDiv.className = 'collection-category';
       const title = document.createElement('div');
@@ -220,7 +256,7 @@ function renderCollection() {
       const grid = document.createElement('div');
       grid.className = 'collection-grid';
 
-      cardsInRarity.forEach(c => {
+      filtered.forEach(c => {
         const el = document.createElement('div');
         el.className = 'card';
         el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
@@ -237,12 +273,12 @@ function resetCollection() {
   if(confirm('Réinitialiser la collection ?')) {
     collection = {};
     localStorage.removeItem('collection');
-    document.getElementById('lastPack').innerHTML = '';
     renderCollection();
   }
 }
 
 renderCollection();
 </script>
+
 </body>
 </html>
