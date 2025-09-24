@@ -30,29 +30,13 @@
   }
 
   .controls {
-    max-width: 800px;
-    margin: 0 auto 30px auto;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    border-radius: 15px;
     display: flex;
     justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap;
+    margin-bottom: 30px;
   }
 
-  .controls input[type=number] {
-    width: 60px;
-    padding: 5px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-  }
-
-  /* Bouton stylé pour ouvrir un paquet */
   .btn-open-pack {
-    padding: 12px 25px;
+    padding: 15px 35px;
     border: none;
     border-radius: 12px;
     font-weight: bold;
@@ -64,6 +48,7 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     position: relative;
     overflow: hidden;
+    font-size: 1.1rem;
   }
 
   .btn-open-pack:hover {
@@ -75,19 +60,6 @@
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
-  }
-
-  button.reset-btn {
-    padding: 12px 20px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.3);
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s ease;
-  }
-  button.reset-btn:hover {
-    background: rgba(255,255,255,0.6);
   }
 
   #overlay {
@@ -180,9 +152,7 @@
 <div id="stats">Cartes possédées: 0 / 8</div>
 
 <div class="controls">
-  <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20"></label>
   <button class="btn-open-pack" onclick="showPackOverlay()">Ouvrir un paquet</button>
-  <button class="reset-btn" onclick="resetCollection()">Réinitialiser</button>
 </div>
 
 <div id="overlay" class="overlay" style="display:none">
@@ -223,7 +193,7 @@ function drawCard() {
 }
 
 function generatePack() {
-  const packSize = parseInt(document.getElementById('packSize').value) || 5;
+  const packSize = 5;
   const pack = [];
   for (let i=0;i<packSize;i++) {
     const card = drawCard();
@@ -254,6 +224,7 @@ function revealNextCard() {
   } else {
     document.getElementById('overlay').style.display = 'none';
     renderCollection();
+    updateStats();
   }
 }
 
@@ -276,4 +247,27 @@ function renderCollection() {
       grid.className = 'collection-grid';
 
       filtered.forEach(c => {
-        const
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
+        grid.appendChild(el);
+      });
+
+      catDiv.appendChild(grid);
+      container.appendChild(catDiv);
+    }
+  });
+}
+
+function updateStats() {
+  const obtained = Object.keys(collection).length;
+  const total = CARDS.length;
+  document.getElementById('stats').textContent = `Cartes possédées: ${obtained} / ${total}`;
+}
+
+// Initial render
+renderCollection();
+updateStats();
+</script>
+</body>
+</html>
