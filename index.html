@@ -1,115 +1,130 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ouverture de Paquets - Jeu de Cartes</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 20px;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    .controls {
-      max-width: 900px;
-      margin: 10px auto;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .pack, .collection {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      text-align: center;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
-    .card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-    }
-    .rarity {
-      font-size: 0.8em;
-      color: #555;
-    }
-    button {
-      margin: 5px;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      background: #4f46e5;
-      color: white;
-      cursor: pointer;
-    }
-    .overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .pack-image {
-      width: 200px; height: 280px;
-      background: url('https://via.placeholder.com/200x280?text=PAQUET') center/cover;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(255,255,255,0.5);
-    }
-    .big-card {
-      width: 250px; height: 350px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(255,255,255,0.8);
-      text-align: center;
-      cursor: pointer;
-    }
-    .big-card img {
-      width: 100%; height: 85%;
-      object-fit: cover;
-      border-radius: 10px 10px 0 0;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ouverture de Paquets - Jeu de Cartes</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 20px;
+  }
+  h1, h2 {
+    text-align: center;
+  }
+  .controls {
+    max-width: 900px;
+    margin: 10px auto;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .pack {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+  }
+  .collection-category {
+    max-width: 900px;
+    margin: 15px auto;
+  }
+  .collection-title {
+    margin: 10px 0;
+    font-size: 1.2em;
+  }
+  .collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+  }
+  .rarity {
+    font-size: 0.8em;
+    color: #555;
+  }
+  button {
+    margin: 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #4f46e5;
+    color: white;
+    cursor: pointer;
+  }
+  .overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .pack-image {
+    width: 200px; height: 280px;
+    background: url('https://via.placeholder.com/200x280?text=PAQUET') center/cover;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+  }
+  .big-card {
+    width: 250px; height: 350px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(255,255,255,0.8);
+    text-align: center;
+    cursor: pointer;
+  }
+  .big-card img {
+    width: 100%; height: 85%;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+  }
+</style>
 </head>
 <body>
-  <h1>Ouverture de Paquets</h1>
-  <div class="controls">
-    <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
-    <button onclick="showPackOverlay()">Ouvrir un paquet</button>
-    <button onclick="resetCollection()">Réinitialiser la collection</button>
-    <button onclick="exportCollection()">Exporter</button>
-    <input type="file" id="importFile" accept="application/json" onchange="importCollection(event)" />
-  </div>
 
-  <div class="controls">
-    <h2>Dernier paquet ouvert</h2>
-    <div id="lastPack" class="pack"></div>
-  </div>
+<h1>Ouverture de Paquets</h1>
 
-  <div class="controls">
-    <h2>Collection</h2>
-    <div id="collection" class="collection"></div>
-  </div>
+<div class="controls">
+  <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
+  <button onclick="showPackOverlay()">Ouvrir un paquet</button>
+  <button onclick="resetCollection()">Réinitialiser la collection</button>
+</div>
 
-  <div id="overlay" class="overlay" style="display:none">
-    <div id="overlayContent"></div>
-  </div>
+<div class="controls">
+  <h2>Dernier paquet ouvert</h2>
+  <div id="lastPack" class="pack"></div>
+</div>
 
-  <script>
+<div id="overlay" class="overlay" style="display:none">
+  <div id="overlayContent"></div>
+</div>
+
+<div id="collectionContainer"></div>
+
+<script>
 const CARDS = [
   { id: "C1", name: "Chouette", rarity: "commune", imageUrl: "Cartes/Chouette.jpeg" },
   { id: "C2", name: "Paon", rarity: "commune", imageUrl: "Cartes/Paon.jpeg" },
@@ -188,69 +203,45 @@ function renderLastPack(pack) {
 }
 
 function renderCollection() {
-  const container = document.getElementById('collection');
+  const container = document.getElementById('collectionContainer');
   container.innerHTML = '';
-  const grouped = {};
-  for (const c of CARDS) {
-    const count = collection[c.id] || 0;
-    if(count > 0) {
-      if(!grouped[c.rarity]) grouped[c.rarity] = [];
-      grouped[c.rarity].push({...c, count});
-    }
-  }
-  for(const rarity of ['commune','rare','mythique','triadique']) {
-    if(grouped[rarity]) {
-      const title = document.createElement('h3');
-      title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-      container.appendChild(title);
-      grouped[rarity].forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">x${c.count}</div>`;
-        container.appendChild(el);
-      });
-    }
-  }
+  const categories = ['commune','rare','mythique','triadique'];
+
+  categories.forEach(rarity => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'collection-category';
+    const title = document.createElement('div');
+    title.className = 'collection-title';
+    title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+    catDiv.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'collection-grid';
+
+    CARDS.filter(c => c.rarity === rarity).forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      if(collection[c.id]) {
+        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
+      }
+      grid.appendChild(el);
+    });
+
+    catDiv.appendChild(grid);
+    container.appendChild(catDiv);
+  });
 }
 
 function resetCollection() {
   if(confirm('Réinitialiser la collection ?')) {
     collection = {};
     localStorage.removeItem('collection');
-    renderCollection();
     document.getElementById('lastPack').innerHTML = '';
+    renderCollection();
   }
-}
-
-function exportCollection() {
-  const data = JSON.stringify({ collection }, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'collection.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importCollection(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      const data = JSON.parse(ev.target.result);
-      collection = data.collection || {};
-      localStorage.setItem('collection', JSON.stringify(collection));
-      renderCollection();
-    } catch {
-      alert('Erreur import');
-    }
-  }
-  reader.readAsText(file);
 }
 
 renderCollection();
-  </script>
+</script>
 </body>
 </html>
