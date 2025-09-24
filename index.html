@@ -125,32 +125,23 @@
   </div>
 
   <script>
-    const CARDS = [
-      ...Array.from({ length: 12 }).map((_, i) => ({
-        id: `C${i+1}`,
-        name: `Commune ${i+1}`,
-        rarity: 'commune',
-        imageUrl: `https://via.placeholder.com/200x300?text=Commune+${i+1}`
-      })),
-      ...Array.from({ length: 8 }).map((_, i) => ({
-        id: `R${i+1}`,
-        name: `Rare ${i+1}`,
-        rarity: 'rare',
-        imageUrl: `https://via.placeholder.com/200x300?text=Rare+${i+1}`
-      })),
-      ...Array.from({ length: 5 }).map((_, i) => ({
-        id: `M${i+1}`,
-        name: `Mythique ${i+1}`,
-        rarity: 'mythique',
-        imageUrl: `https://via.placeholder.com/200x300?text=Mythique+${i+1}`
-      })),
-      ...Array.from({ length: 3 }).map((_, i) => ({
-        id: `T${i+1}`,
-        name: `Triadique ${i+1}`,
-        rarity: 'triadique',
-        imageUrl: `https://via.placeholder.com/200x300?text=Triadique+${i+1}`
-      }))
-    ];
+ const CARDS = [
+  // Communes
+  { id: "C1", name: "Pikachu", rarity: "commune", imageUrl: "images/pikachu.png" },
+  { id: "C2", name: "Bulbizarre", rarity: "commune", imageUrl: "images/bulbizarre.png" },
+  { id: "C3", name: "Salamèche", rarity: "commune", imageUrl: "images/salameche.png" },
+  { id: "C4", name: "Carapuce", rarity: "commune", imageUrl: "images/carapuce.png" },
+
+  // Rares
+  { id: "R1", name: "Dracaufeu", rarity: "rare", imageUrl: "images/dracaufeu.png" },
+  { id: "R2", name: "Tortank", rarity: "rare", imageUrl: "images/tortank.png" },
+
+  // Mythiques
+  { id: "M1", name: "Mewtwo", rarity: "mythique", imageUrl: "images/mewtwo.png" },
+
+  // Triadiques
+  { id: "T1", name: "Arceus", rarity: "triadique", imageUrl: "images/arceus.png" }
+];
 
     const PROBABILITIES = {
       commune: 0.7,
