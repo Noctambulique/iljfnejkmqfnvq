@@ -208,27 +208,28 @@ function renderCollection() {
   const categories = ['commune','rare','mythique','triadique'];
 
   categories.forEach(rarity => {
-    const catDiv = document.createElement('div');
-    catDiv.className = 'collection-category';
-    const title = document.createElement('div');
-    title.className = 'collection-title';
-    title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-    catDiv.appendChild(title);
+    const cardsInRarity = CARDS.filter(c => c.rarity === rarity && collection[c.id]);
+    if(cardsInRarity.length > 0) {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'collection-category';
+      const title = document.createElement('div');
+      title.className = 'collection-title';
+      title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+      catDiv.appendChild(title);
 
-    const grid = document.createElement('div');
-    grid.className = 'collection-grid';
+      const grid = document.createElement('div');
+      grid.className = 'collection-grid';
 
-    CARDS.filter(c => c.rarity === rarity).forEach(c => {
-      const el = document.createElement('div');
-      el.className = 'card';
-      if(collection[c.id]) {
+      cardsInRarity.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card';
         el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
-      }
-      grid.appendChild(el);
-    });
+        grid.appendChild(el);
+      });
 
-    catDiv.appendChild(grid);
-    container.appendChild(catDiv);
+      catDiv.appendChild(grid);
+      container.appendChild(catDiv);
+    }
   });
 }
 
