@@ -57,13 +57,49 @@
     button:disabled {
       background: #999;
     }
+    /* Overlay paquet */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .pack-image {
+      width: 200px;
+      height: 280px;
+      background: url('https://via.placeholder.com/200x280?text=PAQUET') center/cover;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+    .big-card {
+      width: 250px;
+      height: 350px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.8);
+      text-align: center;
+      cursor: pointer;
+    }
+    .big-card img {
+      width: 100%;
+      height: 85%;
+      object-fit: cover;
+      border-radius: 10px 10px 0 0;
+    }
   </style>
 </head>
 <body>
   <h1>Ouverture de Paquets</h1>
   <div class="controls">
     <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
-    <button onclick="openPack()">Ouvrir un paquet</button>
+    <button onclick="showPackOverlay()">Cliquer pour ouvrir un paquet</button>
     <button onclick="resetCollection()">Réinitialiser la collection</button>
     <button onclick="exportCollection()">Exporter</button>
     <input type="file" id="importFile" accept="application/json" onchange="importCollection(event)" />
@@ -84,32 +120,30 @@
     <p id="stats"></p>
   </div>
 
+  <div id="overlay" class="overlay" style="display:none">
+    <div id="overlayContent"></div>
+  </div>
+
   <script>
-    // Définir vos cartes ici (facile à personnaliser !)
-    // Vous pouvez changer nom, rareté et imageUrl pour chaque carte
     const CARDS = [
-      // Communes (12)
       ...Array.from({ length: 12 }).map((_, i) => ({
         id: `C${i+1}`,
         name: `Commune ${i+1}`,
         rarity: 'commune',
         imageUrl: `https://via.placeholder.com/200x300?text=Commune+${i+1}`
       })),
-      // Rares (8)
       ...Array.from({ length: 8 }).map((_, i) => ({
         id: `R${i+1}`,
         name: `Rare ${i+1}`,
         rarity: 'rare',
         imageUrl: `https://via.placeholder.com/200x300?text=Rare+${i+1}`
       })),
-      // Mythiques (5)
       ...Array.from({ length: 5 }).map((_, i) => ({
         id: `M${i+1}`,
         name: `Mythique ${i+1}`,
         rarity: 'mythique',
         imageUrl: `https://via.placeholder.com/200x300?text=Mythique+${i+1}`
       })),
-      // Triadiques (3)
       ...Array.from({ length: 3 }).map((_, i) => ({
         id: `T${i+1}`,
         name: `Triadique ${i+1}`,
@@ -126,6 +160,8 @@
     };
 
     let collection = JSON.parse(localStorage.getItem('collection') || '{}');
+    let revealQueue = [];
+    let currentIndex = 0;
 
     function weightedPick(probabilities) {
       let r = Math.random();
@@ -143,7 +179,7 @@
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
-    function openPack() {
+    function generatePack() {
       const packSize = parseInt(document.getElementById('packSize').value) || 5;
       const pack = [];
       for (let i = 0; i < packSize; i++) {
@@ -152,12 +188,36 @@
         collection[card.id] = (collection[card.id] || 0) + 1;
       }
       localStorage.setItem('collection', JSON.stringify(collection));
-      renderPack(pack);
-      renderCollection();
-      renderStats();
+      return pack;
     }
 
-    function renderPack(pack) {
+    function showPackOverlay() {
+      revealQueue = generatePack();
+      currentIndex = -1;
+      document.getElementById('overlay').style.display = 'flex';
+      document.getElementById('overlayContent').innerHTML = `<div class='pack-image' onclick='revealNextCard()'></div>`;
+    }
+
+    function revealNextCard() {
+      currentIndex++;
+      if (currentIndex < revealQueue.length) {
+        const c = revealQueue[currentIndex];
+        document.getElementById('overlayContent').innerHTML = `
+          <div class='big-card' onclick='revealNextCard()'>
+            <img src='${c.imageUrl}' alt='${c.name}'/>
+            <div>${c.name}</div>
+            <div class='rarity'>${c.rarity}</div>
+          </div>`;
+      } else {
+        // fin du pack
+        document.getElementById('overlay').style.display = 'none';
+        renderLastPack(revealQueue);
+        renderCollection();
+        renderStats();
+      }
+    }
+
+    function renderLastPack(pack) {
       const container = document.getElementById('lastPack');
       container.innerHTML = '';
       pack.forEach(c => {
@@ -225,7 +285,6 @@
       reader.readAsText(file);
     }
 
-    // initial render
     renderCollection();
     renderStats();
   </script>
