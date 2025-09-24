@@ -1,373 +1,233 @@
-import React, { useState, useEffect } from 'react'
-
-// Jeu d'ouverture de paquets de cartes (single-file React component)
-// Utilise Tailwind pour le style (aucun import nécessaire si Tailwind déjà configuré)
-// Comportement :
-// - Définissez vos cartes (nom, rareté, imageUrl) dans `DEFAULT_CARDS`
-// - Ouvrez des paquets (packSize configurable)
-// - Probabilités par rareté configurables
-// - Objectif : collectionner absolument toutes les cartes
-// - Possibilité de personnaliser les images via URL ou upload local (dataURL)
-
-// Raretés acceptées : 'commune', 'rare', 'mythique', 'triadique'
-
-const DEFAULT_CARDS = [
-  // Exemples : remplacez imageUrl par vos images portrait (format vertical)
-  // 12 communes
-  ...Array.from({ length: 12 }).map((_, i) => ({
-    id: `C${i + 1}`,
-    name: `Commune ${i + 1}`,
-    rarity: 'commune',
-    imageUrl: `https://via.placeholder.com/300x420?text=Commune+${i + 1}`,
-  })),
-  // 8 rares
-  ...Array.from({ length: 8 }).map((_, i) => ({
-    id: `R${i + 1}`,
-    name: `Rare ${i + 1}`,
-    rarity: 'rare',
-    imageUrl: `https://via.placeholder.com/300x420?text=Rare+${i + 1}`,
-  })),
-  // 5 mythiques
-  ...Array.from({ length: 5 }).map((_, i) => ({
-    id: `M${i + 1}`,
-    name: `Mythique ${i + 1}`,
-    rarity: 'mythique',
-    imageUrl: `https://via.placeholder.com/300x420?text=Mythique+${i + 1}`,
-  })),
-  // 3 triadiques
-  ...Array.from({ length: 3 }).map((_, i) => ({
-    id: `T${i + 1}`,
-    name: `Triadique ${i + 1}`,
-    rarity: 'triadique',
-    imageUrl: `https://via.placeholder.com/300x420?text=Triadique+${i + 1}`,
-  })),
-]
-
-const DEFAULT_PROBABILITIES = {
-  commune: 0.7,
-  rare: 0.2,
-  mythique: 0.08,
-  triadique: 0.02,
-}
-
-const DEFAULT_PACK_SIZE = 5
-
-// Utilitaire : tirage pondéré
-function weightedPick(items, weights) {
-  const total = weights.reduce((a, b) => a + b, 0)
-  let r = Math.random() * total
-  for (let i = 0; i < items.length; i++) {
-    if (r < weights[i]) return items[i]
-    r -= weights[i]
-  }
-  return items[items.length - 1]
-}
-
-export default function PackOpenerGame() {
-  const [cards, setCards] = useState(DEFAULT_CARDS)
-  const [probabilities, setProbabilities] = useState(DEFAULT_PROBABILITIES)
-  const [packSize, setPackSize] = useState(DEFAULT_PACK_SIZE)
-  const [collection, setCollection] = useState(() => {
-    try {
-      const raw = localStorage.getItem('po_collection_v1')
-      return raw ? JSON.parse(raw) : {}
-    } catch (e) {
-      return {}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ouverture de Paquets - Jeu de Cartes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 20px;
     }
-  })
-  const [openedPacks, setOpenedPacks] = useState([])
-  const [lastOpened, setLastOpened] = useState([])
-  const [isOpening, setIsOpening] = useState(false)
-  const [guaranteeRareOrBetter, setGuaranteeRareOrBetter] = useState(true)
-  const [filter, setFilter] = useState('all')
-
-  useEffect(() => {
-    localStorage.setItem('po_collection_v1', JSON.stringify(collection))
-  }, [collection])
-
-  const rarityBuckets = cards.reduce((acc, c) => {
-    acc[c.rarity] = acc[c.rarity] || []
-    acc[c.rarity].push(c)
-    return acc
-  }, {})
-
-  const totalUnique = cards.length
-  const collectedUnique = Object.keys(collection).filter((id) => collection[id] > 0).length
-
-  function drawOneCard() {
-    // Decide rarity by probabilities
-    const rarities = Object.keys(probabilities)
-    const weights = rarities.map((r) => probabilities[r] || 0)
-    const chosenRarity = weightedPick(rarities, weights)
-    const pool = rarityBuckets[chosenRarity] || []
-    if (pool.length === 0) {
-      // fallback to any card
-      return cards[Math.floor(Math.random() * cards.length)]
+    h1, h2 {
+      text-align: center;
     }
-    return pool[Math.floor(Math.random() * pool.length)]
-  }
+    .controls, .stats {
+      max-width: 900px;
+      margin: 10px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .pack, .collection {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: center;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .rarity {
+      font-size: 0.8em;
+      color: #555;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #999;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ouverture de Paquets</h1>
+  <div class="controls">
+    <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
+    <button onclick="openPack()">Ouvrir un paquet</button>
+    <button onclick="resetCollection()">Réinitialiser la collection</button>
+    <button onclick="exportCollection()">Exporter</button>
+    <input type="file" id="importFile" accept="application/json" onchange="importCollection(event)" />
+  </div>
 
-  function openPack() {
-    if (isOpening) return
-    setIsOpening(true)
-    const pack = []
+  <div class="controls">
+    <h2>Dernier paquet ouvert</h2>
+    <div id="lastPack" class="pack"></div>
+  </div>
 
-    // If guaranteeing at least one rare or better
-    const rarerSet = ['rare', 'mythique', 'triadique']
-    let guaranteedIndex = -1
-    if (guaranteeRareOrBetter) {
-      guaranteedIndex = Math.floor(Math.random() * packSize)
+  <div class="controls">
+    <h2>Collection</h2>
+    <div id="collection" class="collection"></div>
+  </div>
+
+  <div class="stats">
+    <h2>Statistiques</h2>
+    <p id="stats"></p>
+  </div>
+
+  <script>
+    // Définir vos cartes ici (facile à personnaliser !)
+    // Vous pouvez changer nom, rareté et imageUrl pour chaque carte
+    const CARDS = [
+      // Communes (12)
+      ...Array.from({ length: 12 }).map((_, i) => ({
+        id: `C${i+1}`,
+        name: `Commune ${i+1}`,
+        rarity: 'commune',
+        imageUrl: `https://via.placeholder.com/200x300?text=Commune+${i+1}`
+      })),
+      // Rares (8)
+      ...Array.from({ length: 8 }).map((_, i) => ({
+        id: `R${i+1}`,
+        name: `Rare ${i+1}`,
+        rarity: 'rare',
+        imageUrl: `https://via.placeholder.com/200x300?text=Rare+${i+1}`
+      })),
+      // Mythiques (5)
+      ...Array.from({ length: 5 }).map((_, i) => ({
+        id: `M${i+1}`,
+        name: `Mythique ${i+1}`,
+        rarity: 'mythique',
+        imageUrl: `https://via.placeholder.com/200x300?text=Mythique+${i+1}`
+      })),
+      // Triadiques (3)
+      ...Array.from({ length: 3 }).map((_, i) => ({
+        id: `T${i+1}`,
+        name: `Triadique ${i+1}`,
+        rarity: 'triadique',
+        imageUrl: `https://via.placeholder.com/200x300?text=Triadique+${i+1}`
+      }))
+    ];
+
+    const PROBABILITIES = {
+      commune: 0.7,
+      rare: 0.2,
+      mythique: 0.08,
+      triadique: 0.02
+    };
+
+    let collection = JSON.parse(localStorage.getItem('collection') || '{}');
+
+    function weightedPick(probabilities) {
+      let r = Math.random();
+      let cumulative = 0;
+      for (const [rarity, prob] of Object.entries(probabilities)) {
+        cumulative += prob;
+        if (r <= cumulative) return rarity;
+      }
+      return 'commune';
     }
 
-    for (let i = 0; i < packSize; i++) {
-      if (i === guaranteedIndex) {
-        // pick rarity among rares and above but weighted by normalized proportions
-        const weights = rarerSet.map((r) => probabilities[r] || 0)
-        const rarity = weightedPick(rarerSet, weights)
-        const pool = rarityBuckets[rarity] || cards
-        pack.push(pool[Math.floor(Math.random() * pool.length)])
-      } else {
-        pack.push(drawOneCard())
+    function drawCard() {
+      const rarity = weightedPick(PROBABILITIES);
+      const pool = CARDS.filter(c => c.rarity === rarity);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function openPack() {
+      const packSize = parseInt(document.getElementById('packSize').value) || 5;
+      const pack = [];
+      for (let i = 0; i < packSize; i++) {
+        const card = drawCard();
+        pack.push(card);
+        collection[card.id] = (collection[card.id] || 0) + 1;
+      }
+      localStorage.setItem('collection', JSON.stringify(collection));
+      renderPack(pack);
+      renderCollection();
+      renderStats();
+    }
+
+    function renderPack(pack) {
+      const container = document.getElementById('lastPack');
+      container.innerHTML = '';
+      pack.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity}</div>`;
+        container.appendChild(el);
+      });
+    }
+
+    function renderCollection() {
+      const container = document.getElementById('collection');
+      container.innerHTML = '';
+      CARDS.forEach(c => {
+        const count = collection[c.id] || 0;
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity} • x${count}</div>`;
+        container.appendChild(el);
+      });
+    }
+
+    function renderStats() {
+      const totalUnique = CARDS.length;
+      const collectedUnique = Object.keys(collection).filter(id => collection[id] > 0).length;
+      document.getElementById('stats').textContent = `${collectedUnique}/${totalUnique} cartes collectées (${((collectedUnique/totalUnique)*100).toFixed(1)}%)`;
+    }
+
+    function resetCollection() {
+      if (confirm('Réinitialiser la collection ?')) {
+        collection = {};
+        localStorage.removeItem('collection');
+        renderCollection();
+        renderStats();
+        document.getElementById('lastPack').innerHTML = '';
       }
     }
 
-    // small animation simulation via timeout
-    setLastOpened([])
-    setTimeout(() => {
-      setLastOpened(pack)
-      setOpenedPacks((p) => [pack, ...p].slice(0, 50))
-      setCollection((col) => {
-        const next = { ...col }
-        for (const c of pack) next[c.id] = (next[c.id] || 0) + 1
-        return next
-      })
-      setIsOpening(false)
-    }, 600)
-  }
-
-  function resetCollection() {
-    if (!confirm('Réinitialiser votre collection ?')) return
-    setCollection({})
-    setOpenedPacks([])
-    setLastOpened([])
-  }
-
-  function exportCollection() {
-    const blob = new Blob([JSON.stringify({ cards, collection }, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'collection.json'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  function importCollection(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      try {
-        const parsed = JSON.parse(ev.target.result)
-        if (parsed.collection) {
-          setCollection(parsed.collection)
-          if (parsed.cards) setCards(parsed.cards)
-          alert('Collection importée')
-        } else alert('Fichier invalide')
-      } catch (err) {
-        alert('Erreur lors de la lecture du fichier')
-      }
+    function exportCollection() {
+      const data = JSON.stringify({ collection }, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'collection.json';
+      a.click();
+      URL.revokeObjectURL(url);
     }
-    reader.readAsText(file)
-  }
 
-  function updateCardImage(cardId, dataUrl) {
-    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, imageUrl: dataUrl } : c)))
-  }
+    function importCollection(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          const data = JSON.parse(ev.target.result);
+          collection = data.collection || {};
+          localStorage.setItem('collection', JSON.stringify(collection));
+          renderCollection();
+          renderStats();
+        } catch (err) {
+          alert('Erreur import');
+        }
+      }
+      reader.readAsText(file);
+    }
 
-  // Simple UI components
-  const RARITY_LABEL = {
-    commune: 'Commune',
-    rare: 'Rare',
-    mythique: 'Mythique',
-    triadique: 'Triadique',
-  }
-
-  const filteredCards = cards.filter((c) => filter === 'all' || c.rarity === filter)
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Ouverture de paquets — Collectionneur</h1>
-        <div className="text-sm text-slate-600">{collectedUnique}/{totalUnique} cartes collectées</div>
-      </header>
-
-      <section className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <div className="text-lg font-semibold">Ouvrir un paquet</div>
-                <div className="text-xs text-slate-500">But : récupérer absolument toutes les cartes</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm">Taille du paquet</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={packSize}
-                  onChange={(e) => setPackSize(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                  className="w-16 p-1 border rounded"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 items-center">
-              <button
-                onClick={openPack}
-                disabled={isOpening}
-                className="px-4 py-2 rounded-xl shadow-sm bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium disabled:opacity-50"
-              >
-                {isOpening ? 'Ouverture...' : `Ouvrir ${packSize} carte(s)`}
-              </button>
-
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={guaranteeRareOrBetter} onChange={(e) => setGuaranteeRareOrBetter(e.target.checked)} />
-                Garantir au moins 1 rare ou mieux
-              </label>
-
-              <button onClick={resetCollection} className="px-3 py-1 rounded border">Réinitialiser</button>
-              <button onClick={exportCollection} className="px-3 py-1 rounded border">Exporter</button>
-              <label className="px-3 py-1 rounded border cursor-pointer">
-                Importer
-                <input onChange={importCollection} type="file" accept="application/json" className="hidden" />
-              </label>
-            </div>
-
-            <div className="mt-4">
-              <div className="grid grid-cols-5 sm:grid-cols-7 gap-3">
-                {lastOpened.length === 0 ? (
-                  <div className="col-span-5 text-slate-500">Dernier paquet vide — ouvrez un paquet pour voir les cartes ici.</div>
-                ) : (
-                  lastOpened.map((c, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="w-28 h-40 rounded-lg overflow-hidden shadow-md bg-slate-100 flex items-center justify-center">
-                        <img src={c.imageUrl} alt={c.name} className="object-cover h-full w-full" />
-                      </div>
-                      <div className="text-xs mt-1 text-center">{c.name}</div>
-                      <div className="text-xxs text-slate-400">{RARITY_LABEL[c.rarity]}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">Collection</h2>
-              <div className="flex items-center gap-2">
-                <select value={filter} onChange={(e) => setFilter(e.target.value)} className="p-1 border rounded">
-                  <option value="all">Toutes</option>
-                  <option value="commune">Communes</option>
-                  <option value="rare">Rares</option>
-                  <option value="mythique">Mythiques</option>
-                  <option value="triadique">Triadiques</option>
-                </select>
-                <div className="text-sm">{collectedUnique}/{totalUnique}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-              {filteredCards.map((c) => {
-                const owned = collection[c.id] || 0
-                return (
-                  <div key={c.id} className="bg-slate-50 rounded-lg p-2 border shadow-sm">
-                    <div className="w-full h-36 rounded overflow-hidden bg-white flex items-center justify-center">
-                      <img src={c.imageUrl} alt={c.name} className="object-cover h-full w-full" />
-                    </div>
-                    <div className="mt-2 text-sm font-medium">{c.name}</div>
-                    <div className="text-xs text-slate-500">{RARITY_LABEL[c.rarity]} • x{owned}</div>
-                    <div className="mt-2 flex gap-1">
-                      <label className="text-xs p-1 border rounded cursor-pointer">
-                        Image URL
-                        <input
-                          type="text"
-                          placeholder="https://..."
-                          onBlur={(e) => updateCardImage(c.id, e.target.value || c.imageUrl)}
-                          className="hidden"
-                        />
-                      </label>
-                      <label className="text-xs p-1 border rounded cursor-pointer">
-                        Upload
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(ev) => {
-                            const f = ev.target.files?.[0]
-                            if (!f) return
-                            const reader = new FileReader()
-                            reader.onload = (e) => updateCardImage(c.id, e.target.result)
-                            reader.readAsDataURL(f)
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-        </div>
-
-        <aside className="space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <h3 className="font-semibold mb-2">Paramètres de tirage</h3>
-            <div className="text-sm text-slate-600 mb-2">Probabilités par rareté (doivent totaliser 1 si possible)</div>
-            {Object.keys(DEFAULT_PROBABILITIES).map((r) => (
-              <div key={r} className="flex items-center gap-2 mb-2">
-                <div className="w-24 text-sm">{RARITY_LABEL[r]}</div>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={probabilities[r]}
-                  onChange={(e) => setProbabilities((p) => ({ ...p, [r]: Math.max(0, Math.min(1, Number(e.target.value) || 0)) }))}
-                  className="w-20 p-1 border rounded"
-                />
-              </div>
-            ))}
-
-            <div className="text-xs text-slate-500 mt-2">Somme actuelle: {Object.values(probabilities).reduce((a, b) => a + b, 0).toFixed(2)}</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <h3 className="font-semibold mb-2">Statistiques</h3>
-            <div className="text-sm">Packs ouverts: {openedPacks.length}</div>
-            <div className="text-sm">Cartes uniques collectées: {collectedUnique} / {totalUnique}</div>
-            <div className="text-sm">Taux d'accomplissement: {((collectedUnique / totalUnique) * 100).toFixed(1)}%</div>
-            <div className="mt-3 text-xs text-slate-500">Conseil : modifiez les images de cartes en uploadant vos visuels portrait pour un rendu fidèle.</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <h3 className="font-semibold mb-2">Shortcuts</h3>
-            <button onClick={() => { for (let i = 0; i < 10; i++) openPack() }} className="block w-full text-left p-2 rounded border mb-2">Ouvrir 10 paquets (rapide)</button>
-            <button onClick={() => { if (confirm('Remplir la collection pour test ?')) {
-              const filled = {}
-              for (const c of cards) filled[c.id] = 1
-              setCollection(filled)
-            } }} className="block w-full text-left p-2 rounded border">Remplir collection (dev/test)</button>
-          </div>
-
-        </aside>
-      </section>
-
-      <footer className="mt-6 text-sm text-slate-500">Astuce: pour personnaliser visuellement vos cartes, utilisez des images portrait (ex: 3:4 ou 2:3). Vous pouvez remplacer toutes les images via upload ou URL.</footer>
-    </div>
-  )
-}
+    // initial render
+    renderCollection();
+    renderStats();
+  </script>
+</body>
+</html>
