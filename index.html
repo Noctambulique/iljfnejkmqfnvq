@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ouverture de Paquets - Jeu de Cartes</title>
 <style>
-  /* Reset simple */
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -19,8 +18,15 @@
   h1 {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  }
+
+  #stats {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
 
   .controls {
@@ -32,7 +38,7 @@
     border-radius: 15px;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     flex-wrap: wrap;
   }
 
@@ -44,21 +50,44 @@
     text-align: center;
   }
 
-  button {
-    padding: 10px 18px;
+  /* Bouton stylé pour ouvrir un paquet */
+  .btn-open-pack {
+    padding: 12px 25px;
     border: none;
-    border-radius: 10px;
-    background: #fff;
-    color: #4f46e5;
+    border-radius: 12px;
     font-weight: bold;
     cursor: pointer;
+    background: linear-gradient(45deg, #facc15, #f97316, #4f46e5);
+    background-size: 200% 200%;
+    color: #fff;
     transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
   }
 
-  button:hover {
-    background: #4f46e5;
-    color: #fff;
+  .btn-open-pack:hover {
+    animation: gradientShift 2s linear infinite;
     transform: scale(1.05);
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  button.reset-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.3);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  button.reset-btn:hover {
+    background: rgba(255,255,255,0.6);
   }
 
   #overlay {
@@ -80,9 +109,7 @@
     transition: transform 0.3s ease;
   }
 
-  .pack-image:hover {
-    transform: scale(1.05);
-  }
+  .pack-image:hover { transform: scale(1.05); }
 
   .big-card {
     width: 260px; height: 360px;
@@ -94,7 +121,6 @@
     color: #000;
     font-weight: bold;
   }
-
   .big-card img {
     width: 100%; height: 85%;
     border-radius: 20px 20px 0 0;
@@ -106,16 +132,12 @@
     margin: 0 auto;
   }
 
-  .collection-category {
-    margin-bottom: 30px;
-  }
-
+  .collection-category { margin-bottom: 30px; }
   .collection-title {
     font-size: 1.5rem;
     margin-bottom: 15px;
     text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
-
   .collection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -134,20 +156,17 @@
     overflow: hidden;
     transition: all 0.3s ease;
   }
-
   .card img {
     width: 100%;
     height: 160px;
     object-fit: cover;
     border-radius: 15px 15px 0 0;
   }
-
   .card:hover {
     transform: scale(1.05);
     border-color: #fff;
     box-shadow: 0 0 20px rgba(255,255,255,0.5);
   }
-
   .card div {
     margin-top: 5px;
     font-weight: bold;
@@ -158,11 +177,12 @@
 <body>
 
 <h1>Ouverture de Paquets</h1>
+<div id="stats">Cartes possédées: 0 / 8</div>
 
 <div class="controls">
   <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20"></label>
-  <button onclick="showPackOverlay()">Ouvrir un paquet</button>
-  <button onclick="resetCollection()">Réinitialiser la collection</button>
+  <button class="btn-open-pack" onclick="showPackOverlay()">Ouvrir un paquet</button>
+  <button class="reset-btn" onclick="resetCollection()">Réinitialiser</button>
 </div>
 
 <div id="overlay" class="overlay" style="display:none">
@@ -183,7 +203,7 @@ const CARDS = [
   { id: "T1", name: "Arceus", rarity: "triadique", imageUrl: "images/arceus.png" }
 ];
 
-const PROBABILITIES = { commune: 0.7, rare: 0.25, mythique: 0.04, triadique: 0.01 };
+const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
 let collection = JSON.parse(localStorage.getItem('collection') || '{}');
 let revealQueue = [], currentIndex = 0;
 
@@ -243,8 +263,7 @@ function renderCollection() {
   const categories = ['commune','rare','mythique','triadique'];
 
   categories.forEach(rarity => {
-    const cardsInRarity = CARDS.filter(c => collection[c.id]);
-    const filtered = cardsInRarity.filter(c => c.rarity === rarity);
+    const filtered = CARDS.filter(c => collection[c.id] && c.rarity === rarity);
     if(filtered.length > 0) {
       const catDiv = document.createElement('div');
       catDiv.className = 'collection-category';
@@ -257,28 +276,4 @@ function renderCollection() {
       grid.className = 'collection-grid';
 
       filtered.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
-        grid.appendChild(el);
-      });
-
-      catDiv.appendChild(grid);
-      container.appendChild(catDiv);
-    }
-  });
-}
-
-function resetCollection() {
-  if(confirm('Réinitialiser la collection ?')) {
-    collection = {};
-    localStorage.removeItem('collection');
-    renderCollection();
-  }
-}
-
-renderCollection();
-</script>
-
-</body>
-</html>
+        const
