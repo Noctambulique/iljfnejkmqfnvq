@@ -1,263 +1,373 @@
-import React, { useRef, useEffect, useState } from "react";
-export default function App() {
-  const canvasRef = useRef(null);
-  const rafRef = useRef(null);
-  const agentsRef = useRef([]);
-  const [running, setRunning] = useState(true);
-  const [count, setCount] = useState(60);
-  const [emojiSet, setEmojiSet] = useState("🐙,🐝,🦋,🐢,🐇");
-  const [maxSpeed, setMaxSpeed] = useState(2.2);
-  const [perception, setPerception] = useState(60);
-  const [separationWeight, setSeparationWeight] = useState(1.6);
-  const [alignmentWeight, setAlignmentWeight] = useState(1.0);
-  const [cohesionWeight, setCohesionWeight] = useState(1.0);
-  const [wrap, setWrap] = useState(true);
-  const [emojiSize, setEmojiSize] = useState(26);
-  const [backgroundAlpha, setBackgroundAlpha] = useState(0.18);
+import React, { useState, useEffect } from 'react'
+
+// Jeu d'ouverture de paquets de cartes (single-file React component)
+// Utilise Tailwind pour le style (aucun import nécessaire si Tailwind déjà configuré)
+// Comportement :
+// - Définissez vos cartes (nom, rareté, imageUrl) dans `DEFAULT_CARDS`
+// - Ouvrez des paquets (packSize configurable)
+// - Probabilités par rareté configurables
+// - Objectif : collectionner absolument toutes les cartes
+// - Possibilité de personnaliser les images via URL ou upload local (dataURL)
+
+// Raretés acceptées : 'commune', 'rare', 'mythique', 'triadique'
+
+const DEFAULT_CARDS = [
+  // Exemples : remplacez imageUrl par vos images portrait (format vertical)
+  // 12 communes
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    id: `C${i + 1}`,
+    name: `Commune ${i + 1}`,
+    rarity: 'commune',
+    imageUrl: `https://via.placeholder.com/300x420?text=Commune+${i + 1}`,
+  })),
+  // 8 rares
+  ...Array.from({ length: 8 }).map((_, i) => ({
+    id: `R${i + 1}`,
+    name: `Rare ${i + 1}`,
+    rarity: 'rare',
+    imageUrl: `https://via.placeholder.com/300x420?text=Rare+${i + 1}`,
+  })),
+  // 5 mythiques
+  ...Array.from({ length: 5 }).map((_, i) => ({
+    id: `M${i + 1}`,
+    name: `Mythique ${i + 1}`,
+    rarity: 'mythique',
+    imageUrl: `https://via.placeholder.com/300x420?text=Mythique+${i + 1}`,
+  })),
+  // 3 triadiques
+  ...Array.from({ length: 3 }).map((_, i) => ({
+    id: `T${i + 1}`,
+    name: `Triadique ${i + 1}`,
+    rarity: 'triadique',
+    imageUrl: `https://via.placeholder.com/300x420?text=Triadique+${i + 1}`,
+  })),
+]
+
+const DEFAULT_PROBABILITIES = {
+  commune: 0.7,
+  rare: 0.2,
+  mythique: 0.08,
+  triadique: 0.02,
+}
+
+const DEFAULT_PACK_SIZE = 5
+
+// Utilitaire : tirage pondéré
+function weightedPick(items, weights) {
+  const total = weights.reduce((a, b) => a + b, 0)
+  let r = Math.random() * total
+  for (let i = 0; i < items.length; i++) {
+    if (r < weights[i]) return items[i]
+    r -= weights[i]
+  }
+  return items[items.length - 1]
+}
+
+export default function PackOpenerGame() {
+  const [cards, setCards] = useState(DEFAULT_CARDS)
+  const [probabilities, setProbabilities] = useState(DEFAULT_PROBABILITIES)
+  const [packSize, setPackSize] = useState(DEFAULT_PACK_SIZE)
+  const [collection, setCollection] = useState(() => {
+    try {
+      const raw = localStorage.getItem('po_collection_v1')
+      return raw ? JSON.parse(raw) : {}
+    } catch (e) {
+      return {}
+    }
+  })
+  const [openedPacks, setOpenedPacks] = useState([])
+  const [lastOpened, setLastOpened] = useState([])
+  const [isOpening, setIsOpening] = useState(false)
+  const [guaranteeRareOrBetter, setGuaranteeRareOrBetter] = useState(true)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const dpr = window.devicePixelRatio || 1;
-    function resize() {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+    localStorage.setItem('po_collection_v1', JSON.stringify(collection))
+  }, [collection])
+
+  const rarityBuckets = cards.reduce((acc, c) => {
+    acc[c.rarity] = acc[c.rarity] || []
+    acc[c.rarity].push(c)
+    return acc
+  }, {})
+
+  const totalUnique = cards.length
+  const collectedUnique = Object.keys(collection).filter((id) => collection[id] > 0).length
+
+  function drawOneCard() {
+    // Decide rarity by probabilities
+    const rarities = Object.keys(probabilities)
+    const weights = rarities.map((r) => probabilities[r] || 0)
+    const chosenRarity = weightedPick(rarities, weights)
+    const pool = rarityBuckets[chosenRarity] || []
+    if (pool.length === 0) {
+      // fallback to any card
+      return cards[Math.floor(Math.random() * cards.length)]
     }
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
-
-  useEffect(() => {
-    initAgents(count);
-  }, []);
-
-  useEffect(() => {
-    agentsRef.current.length = 0;
-    initAgents(count);
-  }, [count]);
-
-  function rand(min, max) {
-    return Math.random() * (max - min) + min;
+    return pool[Math.floor(Math.random() * pool.length)]
   }
 
-  function initAgents(n) {
-    const canvas = canvasRef.current;
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const emojis = emojiSet.split(",").map(s => s.trim()).filter(Boolean);
-    for (let i = 0; i < n; i++) {
-      const a = {
-        id: Math.random().toString(36).slice(2, 9),
-        x: rand(0, w),
-        y: rand(0, h),
-        vx: rand(-1, 1),
-        vy: rand(-1, 1),
-        size: emojiSize + rand(-6, 6),
-        emoji: emojis[Math.floor(Math.random() * emojis.length)] || "🟢",
-      };
-      agentsRef.current.push(a);
+  function openPack() {
+    if (isOpening) return
+    setIsOpening(true)
+    const pack = []
+
+    // If guaranteeing at least one rare or better
+    const rarerSet = ['rare', 'mythique', 'triadique']
+    let guaranteedIndex = -1
+    if (guaranteeRareOrBetter) {
+      guaranteedIndex = Math.floor(Math.random() * packSize)
     }
-  }
 
-  function limit(vx, vy, max) {
-    const mag = Math.hypot(vx, vy) || 0.0001;
-    if (mag > max) {
-      const s = max / mag;
-      return [vx * s, vy * s];
-    }
-    return [vx, vy];
-  }
-
-  function step(dt) {
-    const canvas = canvasRef.current;
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const agents = agentsRef.current;
-    for (let i = 0; i < agents.length; i++) {
-      const a = agents[i];
-      let steerSepX = 0,
-        steerSepY = 0,
-        steerAliX = 0,
-        steerAliY = 0,
-        steerCohX = 0,
-        steerCohY = 0;
-      let total = 0;
-      for (let j = 0; j < agents.length; j++) {
-        if (i === j) continue;
-        const b = agents[j];
-        let dx = b.x - a.x;
-        let dy = b.y - a.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 0.0001) continue;
-        if (dist < perception) {
-          total++;
-          steerAliX += b.vx;
-          steerAliY += b.vy;
-          steerCohX += b.x;
-          steerCohY += b.y;
-          const diffX = a.x - b.x;
-          const diffY = a.y - b.y;
-          steerSepX += diffX / (dist * dist);
-          steerSepY += diffY / (dist * dist);
-        }
-      }
-      if (total > 0) {
-        steerAliX /= total;
-        steerAliY /= total;
-        steerAliX -= a.vx;
-        steerAliY -= a.vy;
-        [steerAliX, steerAliY] = limit(steerAliX, steerAliY, 0.05);
-        steerCohX = steerCohX / total - a.x;
-        steerCohY = steerCohY / total - a.y;
-        [steerCohX, steerCohY] = limit(steerCohX, steerCohY, 0.04);
-        [steerSepX, steerSepY] = limit(steerSepX, steerSepY, 0.15);
-      }
-
-      a.vx += steerSepX * separationWeight + steerAliX * alignmentWeight + steerCohX * cohesionWeight;
-      a.vy += steerSepY * separationWeight + steerAliY * alignmentWeight + steerCohY * cohesionWeight;
-      [a.vx, a.vy] = limit(a.vx, a.vy, maxSpeed);
-      a.x += a.vx * dt;
-      a.y += a.vy * dt;
-
-      if (wrap) {
-        if (a.x < -a.size) a.x = w + a.size;
-        if (a.x > w + a.size) a.x = -a.size;
-        if (a.y < -a.size) a.y = h + a.size;
-        if (a.y > h + a.size) a.y = -a.size;
+    for (let i = 0; i < packSize; i++) {
+      if (i === guaranteedIndex) {
+        // pick rarity among rares and above but weighted by normalized proportions
+        const weights = rarerSet.map((r) => probabilities[r] || 0)
+        const rarity = weightedPick(rarerSet, weights)
+        const pool = rarityBuckets[rarity] || cards
+        pack.push(pool[Math.floor(Math.random() * pool.length)])
       } else {
-        if (a.x < 0) { a.x = 0; a.vx *= -0.8 }
-        if (a.x > w) { a.x = w; a.vx *= -0.8 }
-        if (a.y < 0) { a.y = 0; a.vy *= -0.8 }
-        if (a.y > h) { a.y = h; a.vy *= -0.8 }
+        pack.push(drawOneCard())
       }
     }
+
+    // small animation simulation via timeout
+    setLastOpened([])
+    setTimeout(() => {
+      setLastOpened(pack)
+      setOpenedPacks((p) => [pack, ...p].slice(0, 50))
+      setCollection((col) => {
+        const next = { ...col }
+        for (const c of pack) next[c.id] = (next[c.id] || 0) + 1
+        return next
+      })
+      setIsOpening(false)
+    }, 600)
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let last = performance.now();
-    function render(now) {
-      const dt = Math.min((now - last) / 16.6667, 4);
-      last = now;
-      if (running) step(dt);
-      ctx.fillStyle = `rgba(10,10,12,${backgroundAlpha})`;
-      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-      ctx.font = `${emojiSize}px serif`;
-      const agents = agentsRef.current;
-      for (let i = 0; i < agents.length; i++) {
-        const a = agents[i];
-        ctx.save();
-        ctx.translate(a.x, a.y);
-        ctx.fillText(a.emoji, 0, 0);
-        ctx.restore();
+  function resetCollection() {
+    if (!confirm('Réinitialiser votre collection ?')) return
+    setCollection({})
+    setOpenedPacks([])
+    setLastOpened([])
+  }
+
+  function exportCollection() {
+    const blob = new Blob([JSON.stringify({ cards, collection }, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'collection.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function importCollection(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result)
+        if (parsed.collection) {
+          setCollection(parsed.collection)
+          if (parsed.cards) setCards(parsed.cards)
+          alert('Collection importée')
+        } else alert('Fichier invalide')
+      } catch (err) {
+        alert('Erreur lors de la lecture du fichier')
       }
-      rafRef.current = requestAnimationFrame(render);
     }
-    rafRef.current = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [running, emojiSize, backgroundAlpha, maxSpeed, perception, separationWeight, alignmentWeight, cohesionWeight, wrap]);
-
-  function toggleRun() {
-    setRunning(r => !r);
+    reader.readAsText(file)
   }
 
-  function clearAgents() {
-    agentsRef.current = [];
+  function updateCardImage(cardId, dataUrl) {
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, imageUrl: dataUrl } : c)))
   }
 
-  function addAgents(n) {
-    const canvas = canvasRef.current;
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const emojis = emojiSet.split(",").map(s => s.trim()).filter(Boolean);
-    for (let i = 0; i < n; i++) {
-      agentsRef.current.push({
-        id: Math.random().toString(36).slice(2, 9),
-        x: rand(0, w),
-        y: rand(0, h),
-        vx: rand(-1, 1),
-        vy: rand(-1, 1),
-        size: emojiSize + rand(-6, 6),
-        emoji: emojis[Math.floor(Math.random() * emojis.length)] || "🔵",
-      });
-    }
+  // Simple UI components
+  const RARITY_LABEL = {
+    commune: 'Commune',
+    rare: 'Rare',
+    mythique: 'Mythique',
+    triadique: 'Triadique',
   }
+
+  const filteredCards = cards.filter((c) => filter === 'all' || c.rarity === filter)
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ padding: 12, display: 'flex', gap: 12, alignItems: 'center', background: 'linear-gradient(90deg,#0f172a,#021025)', color: '#e6eef8' }}>
-        <div style={{ fontWeight: 700, fontSize: 18 }}>Émergence — interface</div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={toggleRun} style={{ padding: '6px 10px', borderRadius: 8, background: '#0ea5a5', color: '#012' }}>{running ? 'Pause' : 'Lancer'}</button>
-          <button onClick={() => { clearAgents(); initAgents(count); }} style={{ padding: '6px 10px', borderRadius: 8, background: '#7c3aed', color: '#fff' }}>Réinitialiser</button>
-          <button onClick={() => addAgents(10)} style={{ padding: '6px 10px', borderRadius: 8, background: '#ef4444', color: '#fff' }}>+10</button>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <label style={{ fontSize: 13 }}>Agents</label>
-          <input type="range" min="10" max="500" value={count} onChange={e => setCount(Number(e.target.value))} />
-          <label style={{ fontSize: 13 }}>{count}</label>
-        </div>
-      </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Ouverture de paquets — Collectionneur</h1>
+        <div className="text-sm text-slate-600">{collectedUnique}/{totalUnique} cartes collectées</div>
+      </header>
 
-      <div style={{ display: 'flex', gap: 12, padding: 12, alignItems: 'flex-start' }}>
-        <div style={{ flex: 1, borderRadius: 12, overflow: 'hidden', boxShadow: '0 6px 18px rgba(2,6,23,0.6)' }}>
-          <canvas ref={canvasRef} style={{ width: '100%', height: '70vh', display: 'block', background: '#071126' }} />
-        </div>
+      <section className="grid md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-4">
+          <div className="bg-white rounded-2xl p-4 shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-lg font-semibold">Ouvrir un paquet</div>
+                <div className="text-xs text-slate-500">But : récupérer absolument toutes les cartes</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm">Taille du paquet</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={packSize}
+                  onChange={(e) => setPackSize(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                  className="w-16 p-1 border rounded"
+                />
+              </div>
+            </div>
 
-        <div style={{ width: 320, padding: 12, borderRadius: 12, background: '#00121b', color: '#cfe8ff' }}>
-          <div style={{ marginBottom: 8, fontWeight: 700 }}>Contrôles</div>
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div>
-              <label>Jeux d'emojis (séparés par ,)</label>
-              <input value={emojiSet} onChange={e => setEmojiSet(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6 }} />
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={openPack}
+                disabled={isOpening}
+                className="px-4 py-2 rounded-xl shadow-sm bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium disabled:opacity-50"
+              >
+                {isOpening ? 'Ouverture...' : `Ouvrir ${packSize} carte(s)`}
+              </button>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={guaranteeRareOrBetter} onChange={(e) => setGuaranteeRareOrBetter(e.target.checked)} />
+                Garantir au moins 1 rare ou mieux
+              </label>
+
+              <button onClick={resetCollection} className="px-3 py-1 rounded border">Réinitialiser</button>
+              <button onClick={exportCollection} className="px-3 py-1 rounded border">Exporter</button>
+              <label className="px-3 py-1 rounded border cursor-pointer">
+                Importer
+                <input onChange={importCollection} type="file" accept="application/json" className="hidden" />
+              </label>
             </div>
-            <div>
-              <label>Vitesse max {maxSpeed.toFixed(2)}</label>
-              <input type="range" min="0.2" max="6" step="0.01" value={maxSpeed} onChange={e => setMaxSpeed(Number(e.target.value))} style={{ width: '100%' }} />
+
+            <div className="mt-4">
+              <div className="grid grid-cols-5 sm:grid-cols-7 gap-3">
+                {lastOpened.length === 0 ? (
+                  <div className="col-span-5 text-slate-500">Dernier paquet vide — ouvrez un paquet pour voir les cartes ici.</div>
+                ) : (
+                  lastOpened.map((c, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="w-28 h-40 rounded-lg overflow-hidden shadow-md bg-slate-100 flex items-center justify-center">
+                        <img src={c.imageUrl} alt={c.name} className="object-cover h-full w-full" />
+                      </div>
+                      <div className="text-xs mt-1 text-center">{c.name}</div>
+                      <div className="text-xxs text-slate-400">{RARITY_LABEL[c.rarity]}</div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <div>
-              <label>Perception {perception}</label>
-              <input type="range" min="20" max="240" value={perception} onChange={e => setPerception(Number(e.target.value))} style={{ width: '100%' }} />
+
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 shadow">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Collection</h2>
+              <div className="flex items-center gap-2">
+                <select value={filter} onChange={(e) => setFilter(e.target.value)} className="p-1 border rounded">
+                  <option value="all">Toutes</option>
+                  <option value="commune">Communes</option>
+                  <option value="rare">Rares</option>
+                  <option value="mythique">Mythiques</option>
+                  <option value="triadique">Triadiques</option>
+                </select>
+                <div className="text-sm">{collectedUnique}/{totalUnique}</div>
+              </div>
             </div>
-            <div>
-              <label>Séparation {separationWeight.toFixed(2)}</label>
-              <input type="range" min="0" max="3" step="0.01" value={separationWeight} onChange={e => setSeparationWeight(Number(e.target.value))} style={{ width: '100%' }} />
-            </div>
-            <div>
-              <label>Alignement {alignmentWeight.toFixed(2)}</label>
-              <input type="range" min="0" max="3" step="0.01" value={alignmentWeight} onChange={e => setAlignmentWeight(Number(e.target.value))} style={{ width: '100%' }} />
-            </div>
-            <div>
-              <label>Cohésion {cohesionWeight.toFixed(2)}</label>
-              <input type="range" min="0" max="3" step="0.01" value={cohesionWeight} onChange={e => setCohesionWeight(Number(e.target.value))} style={{ width: '100%' }} />
-            </div>
-            <div>
-              <label>Taille emoji {emojiSize}px</label>
-              <input type="range" min="12" max="64" value={emojiSize} onChange={e => setEmojiSize(Number(e.target.value))} style={{ width: '100%' }} />
-            </div>
-            <div>
-              <label>Traînée d'arrière-plan {backgroundAlpha.toFixed(2)}</label>
-              <input type="range" min="0" max="0.7" step="0.01" value={backgroundAlpha} onChange={e => setBackgroundAlpha(Number(e.target.value))} style={{ width: '100%' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <label>Rebond / Wrap</label>
-              <button onClick={() => setWrap(w => !w)} style={{ padding: '6px 8px', borderRadius: 6 }}>{wrap ? 'Wrap' : 'Rebond'}</button>
-              <button onClick={() => { agentsRef.current = []; initAgents(count); }} style={{ padding: '6px 8px', borderRadius: 6 }}>Réinitialiser agents</button>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => addAgents(5)} style={{ padding: '8px', borderRadius: 8 }}>Ajouter 5</button>
-              <button onClick={() => addAgents(20)} style={{ padding: '8px', borderRadius: 8 }}>Ajouter 20</button>
-              <button onClick={() => { agentsRef.current = []; }} style={{ padding: '8px', borderRadius: 8 }}>Supprimer</button>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              {filteredCards.map((c) => {
+                const owned = collection[c.id] || 0
+                return (
+                  <div key={c.id} className="bg-slate-50 rounded-lg p-2 border shadow-sm">
+                    <div className="w-full h-36 rounded overflow-hidden bg-white flex items-center justify-center">
+                      <img src={c.imageUrl} alt={c.name} className="object-cover h-full w-full" />
+                    </div>
+                    <div className="mt-2 text-sm font-medium">{c.name}</div>
+                    <div className="text-xs text-slate-500">{RARITY_LABEL[c.rarity]} • x{owned}</div>
+                    <div className="mt-2 flex gap-1">
+                      <label className="text-xs p-1 border rounded cursor-pointer">
+                        Image URL
+                        <input
+                          type="text"
+                          placeholder="https://..."
+                          onBlur={(e) => updateCardImage(c.id, e.target.value || c.imageUrl)}
+                          className="hidden"
+                        />
+                      </label>
+                      <label className="text-xs p-1 border rounded cursor-pointer">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(ev) => {
+                            const f = ev.target.files?.[0]
+                            if (!f) return
+                            const reader = new FileReader()
+                            reader.onload = (e) => updateCardImage(c.id, e.target.result)
+                            reader.readAsDataURL(f)
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
+
         </div>
-      </div>
+
+        <aside className="space-y-4">
+          <div className="bg-white rounded-2xl p-4 shadow">
+            <h3 className="font-semibold mb-2">Paramètres de tirage</h3>
+            <div className="text-sm text-slate-600 mb-2">Probabilités par rareté (doivent totaliser 1 si possible)</div>
+            {Object.keys(DEFAULT_PROBABILITIES).map((r) => (
+              <div key={r} className="flex items-center gap-2 mb-2">
+                <div className="w-24 text-sm">{RARITY_LABEL[r]}</div>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="1"
+                  value={probabilities[r]}
+                  onChange={(e) => setProbabilities((p) => ({ ...p, [r]: Math.max(0, Math.min(1, Number(e.target.value) || 0)) }))}
+                  className="w-20 p-1 border rounded"
+                />
+              </div>
+            ))}
+
+            <div className="text-xs text-slate-500 mt-2">Somme actuelle: {Object.values(probabilities).reduce((a, b) => a + b, 0).toFixed(2)}</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 shadow">
+            <h3 className="font-semibold mb-2">Statistiques</h3>
+            <div className="text-sm">Packs ouverts: {openedPacks.length}</div>
+            <div className="text-sm">Cartes uniques collectées: {collectedUnique} / {totalUnique}</div>
+            <div className="text-sm">Taux d'accomplissement: {((collectedUnique / totalUnique) * 100).toFixed(1)}%</div>
+            <div className="mt-3 text-xs text-slate-500">Conseil : modifiez les images de cartes en uploadant vos visuels portrait pour un rendu fidèle.</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 shadow">
+            <h3 className="font-semibold mb-2">Shortcuts</h3>
+            <button onClick={() => { for (let i = 0; i < 10; i++) openPack() }} className="block w-full text-left p-2 rounded border mb-2">Ouvrir 10 paquets (rapide)</button>
+            <button onClick={() => { if (confirm('Remplir la collection pour test ?')) {
+              const filled = {}
+              for (const c of cards) filled[c.id] = 1
+              setCollection(filled)
+            } }} className="block w-full text-left p-2 rounded border">Remplir collection (dev/test)</button>
+          </div>
+
+        </aside>
+      </section>
+
+      <footer className="mt-6 text-sm text-slate-500">Astuce: pour personnaliser visuellement vos cartes, utilisez des images portrait (ex: 3:4 ou 2:3). Vous pouvez remplacer toutes les images via upload ou URL.</footer>
     </div>
-  );
+  )
 }
