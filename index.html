@@ -14,7 +14,7 @@
     h1, h2 {
       text-align: center;
     }
-    .controls, .stats {
+    .controls {
       max-width: 900px;
       margin: 10px auto;
       background: white;
@@ -54,16 +54,9 @@
       color: white;
       cursor: pointer;
     }
-    button:disabled {
-      background: #999;
-    }
-    /* Overlay paquet */
     .overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.8);
       display: flex;
       align-items: center;
@@ -71,16 +64,14 @@
       z-index: 1000;
     }
     .pack-image {
-      width: 200px;
-      height: 280px;
+      width: 200px; height: 280px;
       background: url('https://via.placeholder.com/200x280?text=PAQUET') center/cover;
       border-radius: 10px;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(255,255,255,0.5);
     }
     .big-card {
-      width: 250px;
-      height: 350px;
+      width: 250px; height: 350px;
       background: white;
       border-radius: 12px;
       box-shadow: 0 0 30px rgba(255,255,255,0.8);
@@ -88,8 +79,7 @@
       cursor: pointer;
     }
     .big-card img {
-      width: 100%;
-      height: 85%;
+      width: 100%; height: 85%;
       object-fit: cover;
       border-radius: 10px 10px 0 0;
     }
@@ -99,7 +89,7 @@
   <h1>Ouverture de Paquets</h1>
   <div class="controls">
     <label>Taille du paquet: <input id="packSize" type="number" value="5" min="1" max="20" /></label>
-    <button onclick="showPackOverlay()">Cliquer pour ouvrir un paquet</button>
+    <button onclick="showPackOverlay()">Ouvrir un paquet</button>
     <button onclick="resetCollection()">Réinitialiser la collection</button>
     <button onclick="exportCollection()">Exporter</button>
     <input type="file" id="importFile" accept="application/json" onchange="importCollection(event)" />
@@ -110,164 +100,157 @@
     <div id="lastPack" class="pack"></div>
   </div>
 
+  <div class="controls">
+    <h2>Collection</h2>
+    <div id="collection" class="collection"></div>
+  </div>
+
   <div id="overlay" class="overlay" style="display:none">
     <div id="overlayContent"></div>
   </div>
 
   <script>
- const CARDS = [
-  // Communes
+const CARDS = [
   { id: "C1", name: "Chouette", rarity: "commune", imageUrl: "Cartes/Chouette.jpeg" },
   { id: "C2", name: "Paon", rarity: "commune", imageUrl: "Cartes/Paon.jpeg" },
   { id: "C3", name: "Salamèche", rarity: "commune", imageUrl: "images/salameche.png" },
   { id: "C4", name: "Carapuce", rarity: "commune", imageUrl: "images/carapuce.png" },
-
-  // Rares
   { id: "R1", name: "Dracaufeu", rarity: "rare", imageUrl: "images/dracaufeu.png" },
   { id: "R2", name: "Tortank", rarity: "rare", imageUrl: "images/tortank.png" },
-
-  // Mythiques
   { id: "M1", name: "Mewtwo", rarity: "mythique", imageUrl: "images/mewtwo.png" },
-
-  // Triadiques
   { id: "T1", name: "Arceus", rarity: "triadique", imageUrl: "images/arceus.png" }
 ];
 
-    const PROBABILITIES = {
-      commune: 0.7,
-      rare: 0.2,
-      mythique: 0.08,
-      triadique: 0.02
-    };
+const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
+let collection = JSON.parse(localStorage.getItem('collection') || '{}');
+let revealQueue = [], currentIndex = 0;
 
-    let collection = JSON.parse(localStorage.getItem('collection') || '{}');
-    let revealQueue = [];
-    let currentIndex = 0;
+function weightedPick(probabilities) {
+  let r = Math.random(), cumulative = 0;
+  for (const [rarity, prob] of Object.entries(probabilities)) {
+    cumulative += prob;
+    if (r <= cumulative) return rarity;
+  }
+  return 'commune';
+}
 
-    function weightedPick(probabilities) {
-      let r = Math.random();
-      let cumulative = 0;
-      for (const [rarity, prob] of Object.entries(probabilities)) {
-        cumulative += prob;
-        if (r <= cumulative) return rarity;
-      }
-      return 'commune';
-    }
+function drawCard() {
+  const rarity = weightedPick(PROBABILITIES);
+  const pool = CARDS.filter(c => c.rarity === rarity);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
-    function drawCard() {
-      const rarity = weightedPick(PROBABILITIES);
-      const pool = CARDS.filter(c => c.rarity === rarity);
-      return pool[Math.floor(Math.random() * pool.length)];
-    }
+function generatePack() {
+  const packSize = parseInt(document.getElementById('packSize').value) || 5;
+  const pack = [];
+  for (let i=0;i<packSize;i++) {
+    const card = drawCard();
+    pack.push(card);
+    collection[card.id] = (collection[card.id] || 0) + 1;
+  }
+  localStorage.setItem('collection', JSON.stringify(collection));
+  return pack;
+}
 
-    function generatePack() {
-      const packSize = parseInt(document.getElementById('packSize').value) || 5;
-      const pack = [];
-      for (let i = 0; i < packSize; i++) {
-        const card = drawCard();
-        pack.push(card);
-        collection[card.id] = (collection[card.id] || 0) + 1;
-      }
-      localStorage.setItem('collection', JSON.stringify(collection));
-      return pack;
-    }
+function showPackOverlay() {
+  revealQueue = generatePack();
+  currentIndex = -1;
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('overlayContent').innerHTML = `<div class='pack-image' onclick='revealNextCard()'></div>`;
+}
 
-    function showPackOverlay() {
-      revealQueue = generatePack();
-      currentIndex = -1;
-      document.getElementById('overlay').style.display = 'flex';
-      document.getElementById('overlayContent').innerHTML = `<div class='pack-image' onclick='revealNextCard()'></div>`;
-    }
-
-    function revealNextCard() {
-      currentIndex++;
-      if (currentIndex < revealQueue.length) {
-        const c = revealQueue[currentIndex];
-        document.getElementById('overlayContent').innerHTML = `
-          <div class='big-card' onclick='revealNextCard()'>
-            <img src='${c.imageUrl}' alt='${c.name}'/>
-            <div>${c.name}</div>
-            <div class='rarity'>${c.rarity}</div>
-          </div>`;
-      } else {
-        // fin du pack
-        document.getElementById('overlay').style.display = 'none';
-        renderLastPack(revealQueue);
-        renderCollection();
-        renderStats();
-      }
-    }
-
-    function renderLastPack(pack) {
-      const container = document.getElementById('lastPack');
-      container.innerHTML = '';
-      pack.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity}</div>`;
-        container.appendChild(el);
-      });
-    }
-
-    function renderCollection() {
-      const container = document.getElementById('collection');
-      container.innerHTML = '';
-      CARDS.forEach(c => {
-        const count = collection[c.id] || 0;
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity} • x${count}</div>`;
-        container.appendChild(el);
-      });
-    }
-
-    function renderStats() {
-      const totalUnique = CARDS.length;
-      const collectedUnique = Object.keys(collection).filter(id => collection[id] > 0).length;
-      document.getElementById('stats').textContent = `${collectedUnique}/${totalUnique} cartes collectées (${((collectedUnique/totalUnique)*100).toFixed(1)}%)`;
-    }
-
-    function resetCollection() {
-      if (confirm('Réinitialiser la collection ?')) {
-        collection = {};
-        localStorage.removeItem('collection');
-        renderCollection();
-        renderStats();
-        document.getElementById('lastPack').innerHTML = '';
-      }
-    }
-
-    function exportCollection() {
-      const data = JSON.stringify({ collection }, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'collection.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importCollection(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          const data = JSON.parse(ev.target.result);
-          collection = data.collection || {};
-          localStorage.setItem('collection', JSON.stringify(collection));
-          renderCollection();
-          renderStats();
-        } catch (err) {
-          alert('Erreur import');
-        }
-      }
-      reader.readAsText(file);
-    }
-
+function revealNextCard() {
+  currentIndex++;
+  if(currentIndex < revealQueue.length) {
+    const c = revealQueue[currentIndex];
+    document.getElementById('overlayContent').innerHTML = `
+      <div class='big-card' onclick='revealNextCard()'>
+        <img src='${c.imageUrl}' alt='${c.name}'/>
+        <div>${c.name}</div>
+        <div class='rarity'>${c.rarity}</div>
+      </div>`;
+  } else {
+    document.getElementById('overlay').style.display = 'none';
+    renderLastPack(revealQueue);
     renderCollection();
-    renderStats();
+  }
+}
+
+function renderLastPack(pack) {
+  const container = document.getElementById('lastPack');
+  container.innerHTML = '';
+  pack.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">${c.rarity}</div>`;
+    container.appendChild(el);
+  });
+}
+
+function renderCollection() {
+  const container = document.getElementById('collection');
+  container.innerHTML = '';
+  const grouped = {};
+  for (const c of CARDS) {
+    const count = collection[c.id] || 0;
+    if(count > 0) {
+      if(!grouped[c.rarity]) grouped[c.rarity] = [];
+      grouped[c.rarity].push({...c, count});
+    }
+  }
+  for(const rarity of ['commune','rare','mythique','triadique']) {
+    if(grouped[rarity]) {
+      const title = document.createElement('h3');
+      title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+      container.appendChild(title);
+      grouped[rarity].forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div><div class="rarity">x${c.count}</div>`;
+        container.appendChild(el);
+      });
+    }
+  }
+}
+
+function resetCollection() {
+  if(confirm('Réinitialiser la collection ?')) {
+    collection = {};
+    localStorage.removeItem('collection');
+    renderCollection();
+    document.getElementById('lastPack').innerHTML = '';
+  }
+}
+
+function exportCollection() {
+  const data = JSON.stringify({ collection }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'collection.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importCollection(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      collection = data.collection || {};
+      localStorage.setItem('collection', JSON.stringify(collection));
+      renderCollection();
+    } catch {
+      alert('Erreur import');
+    }
+  }
+  reader.readAsText(file);
+}
+
+renderCollection();
   </script>
 </body>
 </html>
