@@ -149,7 +149,7 @@
 <body>
 
 <h1>Ouverture de Paquets</h1>
-<div id="stats">Cartes possédées: 0 / 8</div>
+<div id="stats">Cartes possédées: 0 / 21</div>
 
 <div class="controls">
   <button class="btn-open-pack" onclick="showPackOverlay()">Ouvrir un paquet</button>
@@ -163,14 +163,26 @@
 
 <script>
 const CARDS = [
-  { id: "C1", name: "Chouette", rarity: "commune", imageUrl: "Cartes/Chouette.jpeg" },
-  { id: "C2", name: "Paon", rarity: "commune", imageUrl: "Cartes/Paon.jpeg" },
-  { id: "C3", name: "Salamèche", rarity: "commune", imageUrl: "images/salameche.png" },
-  { id: "C4", name: "Carapuce", rarity: "commune", imageUrl: "images/carapuce.png" },
-  { id: "R1", name: "Dracaufeu", rarity: "rare", imageUrl: "images/dracaufeu.png" },
-  { id: "R2", name: "Tortank", rarity: "rare", imageUrl: "images/tortank.png" },
-  { id: "M1", name: "Mewtwo", rarity: "mythique", imageUrl: "images/mewtwo.png" },
-  { id: "T1", name: "Arceus", rarity: "triadique", imageUrl: "images/arceus.png" }
+  { id: "T1", name: "Chouette", rarity: "triadique", imageUrl: "Cartes/Chouette.jpeg" },
+  { id: "T2", name: "Paon", rarity: "triadique", imageUrl: "Cartes/Paon.jpeg" },
+  { id: "T3", name: "Corbeau", rarity: "triadique", imageUrl: "Cartes/Corbeau.jpeg" },
+  { id: "M1", name: "Alice", rarity: "mythique", imageUrl: "Cartes/Alice.jpeg" },
+  { id: "M2", name: "Mehdi", rarity: "mythique", imageUrl: "Cartes/Medhi.jpeg" },
+  { id: "M3", name: "Le Joueur", rarity: "mythique", imageUrl: "Cartes/Le Joueur.jpeg" },
+  { id: "M4", name: "Sherlock Holmes", rarity: "mythique", imageUrl: "Cartes/Sherlock Holmes.jpeg" },
+  { id: "R1", name: "Breakfast", rarity: "rare", imageUrl: "Cartes/Breakfast.jpeg" }
+  { id: "R2", name: "Edward Norton", rarity: "rare", imageUrl: "Cartes/Edward Norton.jpeg" }
+  { id: "R3", name: "Joe Goldberg", rarity: "rare", imageUrl: "Cartes/Joe Goldberg.jpeg" }
+  { id: "R4", name: "Magician", rarity: "rare", imageUrl: "Cartes/Magician.jpeg" }
+  { id: "R5", name: "Miranda Priestley", rarity: "rare", imageUrl: "Cartes/Miranda Priestley.jpeg" }
+  { id: "R6", name: "Professeur", rarity: "rare", imageUrl: "Cartes/Professeur.jpeg" }
+  { id: "R7", name: "Split", rarity: "rare", imageUrl: "Cartes/Split.jpeg" }
+  { id: "R8", name: "Ashton Kutcher", rarity: "rare", imageUrl: "Cartes/Ashton Kutcher.jpeg" }
+  { id: "M1", name: "Kyan Khojandi", rarity: "commun", imageUrl: "Cartes/Kyan Khojandi.jpeg" }
+  { id: "M2", name: "Belle & Sébastien", rarity: "commun", imageUrl: "Cartes/Belle & Sébastien.jpeg }
+  { id: "M3", name: "The End", rarity: "commun", imageUrl: "Cartes/The End.jpeg" }
+  { id: "M4", name: "The Wolf of Wall Street", rarity: "commun", imageUrl: "Cartes/The Wolf of Wall Street.jpeg" }
+  { id: "M5", name: "Vague", rarity: "commun", imageUrl: "Cartes/Vague.jpeg" }
 ];
 
 const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
