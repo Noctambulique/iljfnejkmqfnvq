@@ -12,21 +12,21 @@
     background: linear-gradient(to bottom, #4f46e5, #6366f1);
     color: #fff;
     min-height: 100vh;
-    padding: 24px;
+    padding: 20px;
   }
 
   h1 {
     text-align: center;
-    font-size: 2.4rem;
-    margin-bottom: 8px;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.25);
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
   }
 
   #stats {
     text-align: center;
     margin-bottom: 20px;
-    font-size: 1.05rem;
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
 
   .controls {
@@ -36,29 +36,24 @@
   }
 
   .btn-open-pack {
-    padding: 14px 34px;
+    padding: 15px 35px;
     border: none;
     border-radius: 12px;
-    font-weight: 700;
+    font-weight: bold;
     cursor: pointer;
     background: linear-gradient(45deg, #facc15, #f97316, #4f46e5);
     background-size: 200% 200%;
     color: #fff;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    font-size: 1.1rem;
   }
 
-  .btn-open-pack:hover:enabled {
+  .btn-open-pack:hover {
     animation: gradientShift 2s linear infinite;
-    transform: scale(1.06);
-  }
-
-  .btn-open-pack:disabled {
-    opacity: 0.6;
-    transform: none;
-    cursor: default;
-    animation: none;
+    transform: scale(1.05);
   }
 
   @keyframes gradientShift {
@@ -70,12 +65,11 @@
   #overlay {
     position: fixed;
     top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.82);
-    display: none;             /* hidden by default */
+    background: rgba(0,0,0,0.8);
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    padding: 20px;
   }
 
   .pack-image {
@@ -83,91 +77,72 @@
     background: url('https://via.placeholder.com/220x300?text=PAQUET') center/cover;
     border-radius: 15px;
     cursor: pointer;
-    box-shadow: 0 0 30px rgba(255,255,255,0.4);
-    transition: transform 0.25s ease;
+    box-shadow: 0 0 30px rgba(255,255,255,0.5);
+    transition: transform 0.3s ease;
   }
-  .pack-image:hover { transform: scale(1.04); }
+
+  .pack-image:hover { transform: scale(1.05); }
 
   .big-card {
-    width: 280px; max-width: 90%;
+    width: 260px; height: 360px;
     background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-radius: 20px;
+    box-shadow: 0 0 40px rgba(255,255,255,0.8);
     text-align: center;
     cursor: pointer;
     color: #000;
-    font-weight: 700;
-    overflow: hidden;
+    font-weight: bold;
   }
   .big-card img {
-    width: 100%;
-    height: 72%;
+    width: 100%; height: 85%;
+    border-radius: 20px 20px 0 0;
     object-fit: cover;
-    display: block;
-  }
-  .big-card .meta {
-    padding: 10px;
-    font-size: 1.05rem;
-  }
-  .rarity {
-    font-size: 0.9rem;
-    color: #444;
-    font-weight: 600;
-    margin-top: 4px;
   }
 
   #collectionContainer {
-    max-width: 1100px;
-    margin: 28px auto 80px auto;
+    max-width: 1000px;
+    margin: 0 auto;
   }
 
-  .collection-category { margin-bottom: 28px; }
+  .collection-category { margin-bottom: 30px; }
   .collection-title {
-    font-size: 1.4rem;
-    margin-bottom: 12px;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.15);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
   .collection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 14px;
+    gap: 15px;
   }
 
   .card {
-    background: rgba(255,255,255,0.12);
-    border: 2px solid rgba(255,255,255,0.18);
-    border-radius: 12px;
-    height: 190px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 15px;
+    height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: stretch;
+    align-items: center;
     overflow: hidden;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    transition: all 0.3s ease;
   }
   .card img {
     width: 100%;
-    height: 128px;
+    height: 160px;
     object-fit: cover;
-    display: block;
-  }
-  .card .name {
-    padding: 8px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #fff;
+    border-radius: 15px 15px 0 0;
   }
   .card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255,255,255,0.95);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    transform: scale(1.05);
+    border-color: #fff;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
   }
-
-  /* small responsive */
-  @media (max-width:600px){
-    h1 { font-size: 1.8rem; }
-    .btn-open-pack { padding: 12px 22px; font-size: 0.95rem; }
+  .card div {
+    margin-top: 5px;
+    font-weight: bold;
+    text-align: center;
   }
 </style>
 </head>
@@ -177,32 +152,24 @@
 <div id="stats">Cartes possédées: 0 / 21</div>
 
 <div class="controls">
-  <button class="btn-open-pack" id="openBtn" type="button">Ouvrir un paquet</button>
+  <button class="btn-open-pack" onclick="showPackOverlay()">Ouvrir un paquet</button>
 </div>
 
-<div id="overlay">
+<div id="overlay" class="overlay" style="display:none">
   <div id="overlayContent"></div>
 </div>
 
 <div id="collectionContainer"></div>
 
 <script>
-/* === données cartes (corrigées) ===
-   - IDs uniques, virgules correctes, 21 cartes au total
-*/
 const CARDS = [
-  // triadique (3)
   { id: "T1", name: "Chouette", rarity: "triadique", imageUrl: "Cartes/Chouette.jpeg" },
   { id: "T2", name: "Paon", rarity: "triadique", imageUrl: "Cartes/Paon.jpeg" },
   { id: "T3", name: "Corbeau", rarity: "triadique", imageUrl: "Cartes/Corbeau.jpeg" },
-
-  // mythique (4)
   { id: "M1", name: "Alice", rarity: "mythique", imageUrl: "Cartes/Alice.jpeg" },
-  { id: "M2", name: "Mehdi", rarity: "mythique", imageUrl: "Cartes/Mehdi.jpeg" },
+  { id: "M2", name: "Mehdi", rarity: "mythique", imageUrl: "Cartes/Medhi.jpeg" },
   { id: "M3", name: "Le Joueur", rarity: "mythique", imageUrl: "Cartes/Le Joueur.jpeg" },
   { id: "M4", name: "Sherlock Holmes", rarity: "mythique", imageUrl: "Cartes/Sherlock Holmes.jpeg" },
-
-  // rare (8)
   { id: "R1", name: "Breakfast", rarity: "rare", imageUrl: "Cartes/Breakfast.jpeg" },
   { id: "R2", name: "Edward Norton", rarity: "rare", imageUrl: "Cartes/Edward Norton.jpeg" },
   { id: "R3", name: "Joe Goldberg", rarity: "rare", imageUrl: "Cartes/Joe Goldberg.jpeg" },
@@ -211,23 +178,17 @@ const CARDS = [
   { id: "R6", name: "Professeur", rarity: "rare", imageUrl: "Cartes/Professeur.jpeg" },
   { id: "R7", name: "Split", rarity: "rare", imageUrl: "Cartes/Split.jpeg" },
   { id: "R8", name: "Ashton Kutcher", rarity: "rare", imageUrl: "Cartes/Ashton Kutcher.jpeg" },
-
-  // commune (6)
   { id: "C1", name: "Kyan Khojandi", rarity: "commune", imageUrl: "Cartes/Kyan Khojandi.jpeg" },
   { id: "C2", name: "Belle & Sébastien", rarity: "commune", imageUrl: "Cartes/Belle & Sébastien.jpeg" },
   { id: "C3", name: "The End", rarity: "commune", imageUrl: "Cartes/The End.jpeg" },
   { id: "C4", name: "The Wolf of Wall Street", rarity: "commune", imageUrl: "Cartes/The Wolf of Wall Street.jpeg" },
-  { id: "C5", name: "Vague", rarity: "commune", imageUrl: "Cartes/Vague.jpeg" },
+  { id: "C5", name: "Vague", rarity: "commune", imageUrl: "Cartes/Vague.jpeg" }
 ];
 
 const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
-
-/* collection stockée : clé = id de la carte, valeur = nombre possédé */
 let collection = JSON.parse(localStorage.getItem('collection') || '{}');
-let revealQueue = [];
-let currentIndex = 0;
+let revealQueue = [], currentIndex = 0;
 
-/* utilitaire : tirage pondéré par rareté */
 function weightedPick(probabilities) {
   let r = Math.random(), cumulative = 0;
   for (const [rarity, prob] of Object.entries(probabilities)) {
@@ -237,21 +198,17 @@ function weightedPick(probabilities) {
   return 'commune';
 }
 
-/* tirer une carte en respectant la rareté */
 function drawCard() {
   const rarity = weightedPick(PROBABILITIES);
   const pool = CARDS.filter(c => c.rarity === rarity);
-  if (pool.length === 0) return null;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/* génère un paquet fixe (5 cartes) */
 function generatePack() {
   const packSize = 5;
   const pack = [];
-  for (let i = 0; i < packSize; i++) {
+  for (let i=0;i<packSize;i++) {
     const card = drawCard();
-    if (!card) continue;
     pack.push(card);
     collection[card.id] = (collection[card.id] || 0) + 1;
   }
@@ -259,52 +216,38 @@ function generatePack() {
   return pack;
 }
 
-/* gestion du bouton : on désactive pour éviter les double-clics */
 function showPackOverlay() {
-  // disable button while opening
-  const btn = document.getElementById('openBtn');
-  btn.disabled = true;
-
   revealQueue = generatePack();
   currentIndex = -1;
-  const overlay = document.getElementById('overlay');
-  overlay.style.display = 'flex';
-  document.getElementById('overlayContent').innerHTML =
-    `<div class="pack-image" role="button" title="Cliquer pour révéler la 1ère carte"></div>`;
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('overlayContent').innerHTML = `<div class='pack-image' onclick='revealNextCard()'></div>`;
 }
 
-/* passe à la carte suivante du paquet (révélation) */
 function revealNextCard() {
   currentIndex++;
-  const overlayContent = document.getElementById('overlayContent');
-  if (currentIndex < revealQueue.length) {
+  if(currentIndex < revealQueue.length) {
     const c = revealQueue[currentIndex];
-    overlayContent.innerHTML = `
-      <div class="big-card" role="button" title="Cliquer pour révéler la carte suivante">
-        <img src="${c.imageUrl}" alt="${c.name}">
-        <div class="meta">
-          ${c.name} <div class="rarity">${c.rarity}</div>
-        </div>
+    document.getElementById('overlayContent').innerHTML = `
+      <div class='big-card' onclick='revealNextCard()'>
+        <img src='${c.imageUrl}' alt='${c.name}'/>
+        <div>${c.name}</div>
+        <div class='rarity'>${c.rarity}</div>
       </div>`;
   } else {
-    // fin du pack
     document.getElementById('overlay').style.display = 'none';
     renderCollection();
     updateStats();
-    // réactiver le bouton
-    document.getElementById('openBtn').disabled = false;
   }
 }
 
-/* affiche la collection — uniquement les cartes obtenues, classées par rareté */
 function renderCollection() {
   const container = document.getElementById('collectionContainer');
   container.innerHTML = '';
   const categories = ['commune','rare','mythique','triadique'];
 
   categories.forEach(rarity => {
-    const filtered = CARDS.filter(c => collection[c.id] && c.rarity === rarity);
-    if (filtered.length > 0) {
+    const filtered = CARDS.filter(c => c.rarity === rarity);
+    if(filtered.length > 0) {
       const catDiv = document.createElement('div');
       catDiv.className = 'collection-category';
       const title = document.createElement('div');
@@ -318,7 +261,17 @@ function renderCollection() {
       filtered.forEach(c => {
         const el = document.createElement('div');
         el.className = 'card';
-        el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"><div class="name">${c.name}</div>`;
+
+        if(collection[c.id]) {
+          // Carte débloquée
+          el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/><div>${c.name}</div>`;
+        } else {
+          // Carte encore cachée
+          el.style.background = "rgba(255,255,255,0.05)";
+          el.style.border = "2px dashed rgba(255,255,255,0.2)";
+          el.innerHTML = `<div style="color:rgba(255,255,255,0.4); font-size:1.2rem;">???</div>`;
+        }
+
         grid.appendChild(el);
       });
 
@@ -328,19 +281,13 @@ function renderCollection() {
   });
 }
 
-/* met à jour la stat en haut */
 function updateStats() {
   const obtained = Object.keys(collection).length;
   const total = CARDS.length;
   document.getElementById('stats').textContent = `Cartes possédées: ${obtained} / ${total}`;
 }
 
-/* branchements événementiels */
-document.getElementById('openBtn').addEventListener('click', showPackOverlay);
-// délégation pour le contenu overlay : le visuel pack-image ou big-card déclenchera revealNextCard
-document.getElementById('overlayContent').addEventListener('click', revealNextCard);
-
-/* rendu initial */
+// Initial render
 renderCollection();
 updateStats();
 </script>
