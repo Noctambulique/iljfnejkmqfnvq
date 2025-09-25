@@ -353,13 +353,15 @@
         const el = document.createElement('div');
         el.className = 'card';
 
-        if (collection[c.id]) {
-          // carte débloquée → afficher image et nom + badge doublons si >1
-          el.innerHTML = `<img src="${escapeHtml(c.imageUrl)}" alt="${escapeHtml(c.name)}"><div class="name">${escapeHtml(c.name)}${collection[c.id] > 1 ? ` <span style="opacity:0.9; font-weight:800;">×${collection[c.id]}</span>` : ''}</div>`;
-        } else {
-          // carte verrouillée → classe .locked (affiche "???")
-          el.classList.add('locked');
-        }
+       if(collection[c.id]) {
+  // Carte débloquée → image seulement
+  el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/>`;
+} else {
+  // Carte encore cachée
+  el.style.background = "rgba(255,255,255,0.05)";
+  el.style.border = "2px dashed rgba(255,255,255,0.2)";
+  el.innerHTML = `<div style="color:rgba(255,255,255,0.4); font-size:1.2rem;">???</div>`;
+}
 
         grid.appendChild(el);
       });
