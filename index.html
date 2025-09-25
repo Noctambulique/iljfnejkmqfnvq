@@ -7,97 +7,150 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(to bottom, #4f46e5, #6366f1);
-    color: #fff;
-    min-height: 100vh;
-    padding: 20px;
-  }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #5b21b6, #2e1065 80%);
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
 
-  h1 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-  }
+/* effet étoiles scintillantes */
+body::before {
+  content: "";
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.2;
+  z-index: 0;
+}
 
-  #stats {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-  }
+h1 {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(255,255,255,0.6), 0 0 25px #a78bfa;
+  z-index: 1;
+  position: relative;
+}
 
-  .controls {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
-  }
+#stats {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  position: relative;
+  z-index: 1;
+}
 
-  .btn-open-pack {
-    padding: 15px 35px;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    background: linear-gradient(45deg, #facc15, #f97316, #4f46e5);
-    background-size: 200% 200%;
-    color: #fff;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: hidden;
-    font-size: 1.1rem;
-  }
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  z-index: 1;
+  position: relative;
+}
 
-  .btn-open-pack:hover {
-    animation: gradientShift 2s linear infinite;
-    transform: scale(1.05);
-  }
+.btn-open-pack {
+  padding: 15px 40px;
+  border: none;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(45deg, #facc15, #f97316, #7c3aed);
+  background-size: 300% 300%;
+  color: #fff;
+  transition: all 0.4s ease;
+  font-size: 1.2rem;
+  box-shadow: 0 0 25px rgba(250,204,21,0.6), inset 0 0 10px rgba(124,58,237,0.6);
+  position: relative;
+  overflow: hidden;
+}
 
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
+.btn-open-pack::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 10%, transparent 60%);
+  animation: pulse 3s infinite;
+}
 
-  #overlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
+@keyframes pulse {
+  0% { transform: rotate(0deg); opacity: 0.7; }
+  50% { transform: rotate(180deg); opacity: 0.2; }
+  100% { transform: rotate(360deg); opacity: 0.7; }
+}
 
-  .pack-image {
-    width: 220px; height: 300px;
-    background: url('https://via.placeholder.com/220x300?text=PAQUET') center/cover;
-    border-radius: 15px;
-    cursor: pointer;
-    box-shadow: 0 0 30px rgba(255,255,255,0.5);
-    transition: transform 0.3s ease;
-  }
+.btn-open-pack:hover {
+  transform: scale(1.08);
+  background-position: 100% 50%;
+}
 
-  .pack-image:hover { transform: scale(1.05); }
+.collection-title {
+  font-size: 1.6rem;
+  margin: 15px 0;
+  padding: 5px 15px;
+  background: linear-gradient(to right, rgba(255,255,255,0.1), rgba(124,58,237,0.3));
+  border-left: 4px solid #a78bfa;
+  border-radius: 8px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
 
-  .big-card {
-    width: 260px; height: 360px;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 0 40px rgba(255,255,255,0.8);
-    text-align: center;
-    cursor: pointer;
-    color: #000;
-    font-weight: bold;
-  }
-  .big-card img {
-    width: 100%; height: 85%;
-    border-radius: 20px 20px 0 0;
-    object-fit: cover;
-  }
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 18px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.card img {
+  width: 100%;
+  height: 165px;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  border-color: #fff;
+  box-shadow: 0 0 25px rgba(255,255,255,0.7);
+}
+
+.card div {
+  margin-top: 6px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* cartes cachées */
+.card.locked {
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+  border: 2px dashed rgba(255,255,255,0.25);
+  position: relative;
+}
+.card.locked::before {
+  content: "???";
+  color: rgba(255,255,255,0.5);
+  font-size: 1.3rem;
+  font-weight: bold;
+  position: absolute;
+}
 
   #collectionContainer {
     max-width: 1000px;
