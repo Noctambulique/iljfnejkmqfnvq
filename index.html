@@ -6,7 +6,6 @@
 <title>Noctadex</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: 'Poppins', sans-serif;
     background: radial-gradient(circle at top, #5b21b6, #2e1065 80%);
@@ -16,8 +15,6 @@
     position: relative;
     overflow-x: hidden;
   }
-
-  /* effet étoiles scintillantes */
   body::before {
     content: "";
     position: absolute;
@@ -26,7 +23,6 @@
     opacity: 0.18;
     z-index: 0;
   }
-
   h1 {
     text-align: center;
     font-size: 2.6rem;
@@ -35,7 +31,6 @@
     z-index: 1;
     position: relative;
   }
-
   #stats {
     text-align: center;
     margin-bottom: 20px;
@@ -44,7 +39,6 @@
     position: relative;
     z-index: 1;
   }
-
   .controls {
     display: flex;
     justify-content: center;
@@ -52,7 +46,6 @@
     z-index: 1;
     position: relative;
   }
-
   .btn-open-pack {
     padding: 14px 36px;
     border: none;
@@ -68,7 +61,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .btn-open-pack::after {
     content: "";
     position: absolute;
@@ -83,17 +75,8 @@
     50% { transform: rotate(180deg); opacity: 0.25; }
     100% { transform: rotate(360deg); opacity: 0.8; }
   }
-
-  .btn-open-pack:hover:enabled {
-    transform: scale(1.06);
-    background-position: 100% 50%;
-  }
-  .btn-open-pack:disabled {
-    opacity: 0.6;
-    cursor: default;
-    transform: none;
-    filter: grayscale(0.1);
-  }
+  .btn-open-pack:hover:enabled { transform: scale(1.06); background-position: 100% 50%; }
+  .btn-open-pack:disabled { opacity: 0.6; cursor: default; transform: none; filter: grayscale(0.1); }
 
   #overlay {
     position: fixed;
@@ -107,7 +90,8 @@
   }
 
   .pack-image {
-    width: 220px; height: 300px;
+    width: 220px;
+    height: 300px;
     background: url('https://via.placeholder.com/220x300?text=PAQUET') center/cover;
     border-radius: 15px;
     cursor: pointer;
@@ -117,7 +101,8 @@
   .pack-image:hover { transform: scale(1.04); }
 
   .big-card {
-    width: 300px; max-width: 92%;
+    width: 300px;
+    max-width: 92%;
     background: #fff;
     border-radius: 18px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.55);
@@ -126,18 +111,26 @@
     color: #000;
     font-weight: 700;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   .big-card img {
-    width: 100%; height: 72%;
-    object-fit: cover;
+    width: 100%;
+    height: auto;
+    flex-grow: 1;
+    object-fit: contain;
     display: block;
+    background: #000;
   }
   .big-card .meta {
     padding: 10px;
     font-size: 1rem;
     color: #111;
   }
-  .rarity { font-size: 0.85rem; color: #444; margin-top: 6px; }
+  .rarity {
+    font-size: 0.85rem;
+    color: #444;
+  }
 
   #collectionContainer {
     max-width: 1100px;
@@ -145,7 +138,6 @@
     position: relative;
     z-index: 1;
   }
-
   .collection-category { margin-bottom: 28px; }
   .collection-title {
     font-size: 1.45rem;
@@ -157,13 +149,11 @@
     border-radius: 8px;
     text-shadow: 0 0 8px rgba(255,255,255,0.5);
   }
-
   .collection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 18px;
   }
-
   .card {
     background: rgba(255,255,255,0.12);
     border: 2px solid rgba(255,255,255,0.2);
@@ -179,24 +169,15 @@
   }
   .card img {
     width: 100%;
-    height: 160px;
-    object-fit: cover;
+    height: 100%;
+    object-fit: contain;
     display: block;
-    border-radius: 12px 12px 0 0;
-  }
-  .card .name {
-    padding: 8px;
-    font-weight: 700;
-    text-align: center;
-    color: #fff;
   }
   .card:hover {
     transform: translateY(-6px);
     border-color: rgba(255,255,255,0.95);
     box-shadow: 0 22px 44px rgba(0,0,0,0.45);
   }
-
-  /* cartes cachées */
   .card.locked {
     background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(0,0,0,0.15));
     border: 2px dashed rgba(255,255,255,0.22);
@@ -212,8 +193,6 @@
     font-weight: 800;
     position: absolute;
   }
-
-  /* responsive */
   @media (max-width:600px){
     h1 { font-size: 1.9rem; }
     .btn-open-pack { padding: 12px 22px; font-size: 0.95rem; }
@@ -221,23 +200,17 @@
 </style>
 </head>
 <body>
-
 <h1>Noctadex</h1>
 <div id="stats">Cartes possédées: 0 / 21</div>
-
 <div class="controls">
   <button class="btn-open-pack" id="openBtn" type="button">Ouvrir un paquet</button>
 </div>
-
 <div id="overlay">
   <div id="overlayContent"></div>
 </div>
-
 <div id="collectionContainer"></div>
-
 <script>
 (function(){
-  // données cartes (corrigées)
   const CARDS = [
     { id: "T1", name: "Chouette", rarity: "triadique", imageUrl: "Cartes/Chouette.jpeg" },
     { id: "T2", name: "Paon", rarity: "triadique", imageUrl: "Cartes/Paon.jpeg" },
@@ -260,10 +233,8 @@
     { id: "C4", name: "The Wolf of Wall Street", rarity: "commune", imageUrl: "Cartes/The Wolf of Wall Street.jpeg" },
     { id: "C5", name: "Vague", rarity: "commune", imageUrl: "Cartes/Vague.jpeg" }
   ];
-
   const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
 
-  // collection stockée : clé = id de la carte, valeur = nombre possédé
   let collection = JSON.parse(localStorage.getItem('collection') || '{}');
   let revealQueue = [];
   let currentIndex = -1;
@@ -276,21 +247,15 @@
     }
     return 'commune';
   }
-
   function drawCard() {
     const rarity = weightedPick(PROBABILITIES);
     const pool = CARDS.filter(c => c.rarity === rarity);
-    if (!pool.length) {
-      // fallback : prendre une carte aléatoire si pool vide (sécurité)
-      return CARDS[Math.floor(Math.random() * CARDS.length)];
-    }
+    if (!pool.length) return CARDS[Math.floor(Math.random() * CARDS.length)];
     return pool[Math.floor(Math.random() * pool.length)];
   }
-
   function generatePack() {
-    const packSize = 5;
     const pack = [];
-    for (let i = 0; i < packSize; i++) {
+    for (let i = 0; i < 5; i++) {
       const card = drawCard();
       if (!card) continue;
       pack.push(card);
@@ -299,10 +264,8 @@
     localStorage.setItem('collection', JSON.stringify(collection));
     return pack;
   }
-
   function showPackOverlay() {
-    const btn = document.getElementById('openBtn');
-    btn.disabled = true; // empêche double-clics
+    document.getElementById('openBtn').disabled = true;
     revealQueue = generatePack();
     currentIndex = -1;
     const overlay = document.getElementById('overlay');
@@ -310,94 +273,69 @@
     document.getElementById('overlayContent').innerHTML =
       `<div class="pack-image" id="packImage" role="button" aria-label="Cliquer pour révéler la première carte"></div>`;
   }
-
   function revealNextCard() {
     const content = document.getElementById('overlayContent');
     currentIndex++;
     if (currentIndex < revealQueue.length) {
       const c = revealQueue[currentIndex];
-      content.innerHTML = `
-        <div class="big-card" id="bigCard" role="button" aria-label="Cliquer pour révéler la carte suivante">
-          <img src="${escapeHtml(c.imageUrl)}" alt="${escapeHtml(c.name)}">
-          <div class="meta">${escapeHtml(c.name)}<div class="rarity">${escapeHtml(c.rarity)}</div></div>
-        </div>`;
+      content.innerHTML =
+        `<div class="big-card" id="bigCard" role="button" aria-label="Cliquer pour révéler la carte suivante">
+           <img src="${escapeHtml(c.imageUrl)}" alt="${escapeHtml(c.name)}">
+           <div class="meta"><div class="rarity">${escapeHtml(c.rarity)}</div></div>
+         </div>`;
     } else {
-      // fin du pack
       document.getElementById('overlay').style.display = 'none';
       renderCollection();
       updateStats();
       document.getElementById('openBtn').disabled = false;
     }
   }
-
   function renderCollection() {
     const container = document.getElementById('collectionContainer');
     container.innerHTML = '';
     const categories = ['commune','rare','mythique','triadique'];
-
     categories.forEach(rarity => {
       const cardsOfRarity = CARDS.filter(c => c.rarity === rarity);
       if (cardsOfRarity.length === 0) return;
-
       const catDiv = document.createElement('div');
       catDiv.className = 'collection-category';
       const title = document.createElement('div');
       title.className = 'collection-title';
       title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
       catDiv.appendChild(title);
-
       const grid = document.createElement('div');
       grid.className = 'collection-grid';
-
       cardsOfRarity.forEach(c => {
         const el = document.createElement('div');
         el.className = 'card';
-
-       if(collection[c.id]) {
-  // Carte débloquée → image seulement
-  el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/>`;
-} else {
-  // Carte encore cachée
-  el.style.background = "rgba(255,255,255,0.05)";
-  el.style.border = "2px dashed rgba(255,255,255,0.2)";
-  el.innerHTML = `<div style="color:rgba(255,255,255,0.4); font-size:1.2rem;">???</div>`;
-}
-
+        if(collection[c.id]) {
+          el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/>`;
+        } else {
+          el.style.background = "rgba(255,255,255,0.05)";
+          el.style.border = "2px dashed rgba(255,255,255,0.2)";
+          el.innerHTML = `<div style="color:rgba(255,255,255,0.4); font-size:1.2rem;">???</div>`;
+        }
         grid.appendChild(el);
       });
-
       catDiv.appendChild(grid);
       container.appendChild(catDiv);
     });
   }
-
   function updateStats() {
-    // nombre de cartes uniques débloquées (clés avec valeur > 0)
     const obtained = Object.keys(collection).filter(k => collection[k] > 0).length;
     const total = CARDS.length;
     document.getElementById('stats').textContent = `Cartes possédées: ${obtained} / ${total}`;
   }
-
-  // petit utilitaire d'échappement (sécurité)
   function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, s => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    })[s]);
+    return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]);
   }
-
-  // écouteurs
   document.getElementById('openBtn').addEventListener('click', showPackOverlay);
-  // délégation : clics dans overlayContent révèlent la prochaine carte
-  document.getElementById('overlayContent').addEventListener('click', function(e){
-    // ignore clic si overlay fermé (sécurité)
+  document.getElementById('overlayContent').addEventListener('click', function(){
     if (document.getElementById('overlay').style.display !== 'flex') return;
     revealNextCard();
   });
-
-  // rendu initial
   renderCollection();
   updateStats();
-
 })();
 </script>
 </body>
