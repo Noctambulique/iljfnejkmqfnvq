@@ -1,243 +1,141 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Test de personnalité — Minimal</title>
+<meta charset="utf-8">
+<title>Test</title>
 <style>
-  :root{
-    --bg: #ffffff;
-    --text: #111;
-    --muted: #6b6b6b;
-    --accent: #000;
-    --card-shadow: rgba(0,0,0,0.04);
-  }
-  html,body{
-    height:100%;
-    margin:0;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background:var(--bg);
-    color:var(--text);
-  }
-  .wrap{
-    min-height:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:48px 16px;
-  }
-  .card{
-    width:760px;
-    max-width:100%;
-    background:transparent;
-    box-shadow: 0 6px 24px var(--card-shadow);
-    border-radius:12px;
-    padding:28px;
-  }
-  h1{
-    margin:0 0 12px 0;
-    font-size:20px;
-    font-weight:600;
-  }
-  p.lead{
-    margin:0 0 20px 0;
-    color:var(--muted);
-    font-size:13px;
-  }
-  .question{
-    padding:12px 14px;
-    border-radius:10px;
-    margin-bottom:10px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:rgba(0,0,0,0.02);
-  }
-  .q-left{
-    display:flex;
-    gap:12px;
-    align-items:center;
-  }
-  .qnum{
-    width:38px;
-    height:38px;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  body {
+    font-family: Arial, sans-serif;
     background:#fff;
-    box-shadow:0 2px 8px rgba(0,0,0,0.04);
-    font-weight:600;
+    padding:20px;
+    color:#111;
   }
-  .qtext{ font-size:14px; color:var(--muted); }
-  .choices{
+  h2 { font-size:18px; margin-bottom:10px; }
+  .row {
     display:flex;
+    align-items:center;
+    margin:10px 0;
+  }
+  .row span {
+    width:80px;
+    font-weight:bold;
+    font-size:14px;
+  }
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(6, 36px);
     gap:8px;
   }
-  label.choice{
-    display:inline-flex;
+  .choice {
+    width:36px;
+    height:36px;
+    display:flex;
     align-items:center;
     justify-content:center;
-    width:44px;
-    height:36px;
-    border-radius:8px;
-    background:#fff;
-    border:1px solid rgba(0,0,0,0.06);
+    border:1px solid #ccc;
+    border-radius:6px;
     cursor:pointer;
-    font-weight:600;
     user-select:none;
+    font-size:14px;
   }
-  input[type="radio"]{ display:none; }
-  input[type="radio"]:checked + .choice{
-    border-color:var(--accent);
-    box-shadow:0 4px 16px rgba(0,0,0,0.06);
-    transform:translateY(-1px);
+  input[type="radio"] { display:none; }
+  input[type="radio"]:checked + .choice {
+    border:2px solid #000;
+    font-weight:bold;
   }
-  .actions{
-    margin-top:18px;
-    display:flex;
-    gap:12px;
-    align-items:center;
-  }
-  button{
-    background:var(--accent);
-    color:#fff;
+  button {
+    padding:10px 16px;
     border:0;
-    padding:10px 14px;
-    border-radius:10px;
-    font-weight:600;
+    background:#000;
+    color:#fff;
+    border-radius:8px;
     cursor:pointer;
-  }
-  button.secondary{
-    background:#fff;
-    color:var(--text);
-    border:1px solid rgba(0,0,0,0.06);
-  }
-  .result{
-    margin-top:18px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-    font-size:16px;
-    padding:14px;
-    border-radius:10px;
-    background:rgba(0,0,0,0.02);
-    display:inline-block;
-  }
-  .small{
-    font-size:13px;
-    color:var(--muted);
-    margin-left:6px;
-  }
-  .footer{
     margin-top:20px;
-    color:var(--muted);
-    font-size:13px;
+  }
+  #result {
+    margin-top:20px;
+    font-family:monospace;
+    font-size:18px;
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <main class="card" role="main" aria-labelledby="title">
-    <h1 id="title">Test de personnalité (6 questions)</h1>
-    <p class="lead">Choisissez une réponse A → F pour chaque question. Les valeurs : A=14, B=33, C=52, D=71, E=91, F=?</p>
 
-    <form id="quiz">
-      <!-- Généré JS : 6 questions -->
-    </form>
+<h2>Test</h2>
 
-    <div class="actions">
-      <button id="compute" type="button">Afficher le résultat</button>
-      <button id="reset" class="secondary" type="button">Réinitialiser</button>
-      <div class="small">Format du résultat : un tableau en ordre des questions.</div>
+<form id="quiz">
+  <div class="row">
+    <span>Q1</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q1" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
     </div>
+  </div>
 
-    <div id="output" class="result" aria-live="polite" style="display:none;">[?, 14, 71, 52, 91, ?]</div>
+  <div class="row">
+    <span>Q2</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q2" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
+    </div>
+  </div>
 
-    <div class="footer">Style minimaliste — fond blanc.</div>
-  </main>
-</div>
+  <div class="row">
+    <span>Q3</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q3" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="row">
+    <span>Q4</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q4" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="row">
+    <span>Q5</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q5" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="row">
+    <span>Q6</span>
+    <div class="grid">
+      ${['A','B','C','D','E','F'].map(l=>`
+        <label><input type="radio" name="q6" value="${l}"><div class="choice">${l}</div></label>
+      `).join('')}
+    </div>
+  </div>
+</form>
+
+<button type="button" id="submit">Résultat</button>
+
+<div id="result"></div>
 
 <script>
-(function(){
-  const valuesMap = {
-    'A': 14,
-    'B': 33,
-    'C': 52,
-    'D': 71,
-    'E': 91,
-    'F': null   // "?" value: represented by null internally, displayed as "?"
-  };
+const map = {A:14, B:33, C:52, D:71, E:91, F:null};
 
-  const quiz = document.getElementById('quiz');
-
-  // Crée 6 questions
-  const NUM_Q = 6;
-  for(let i=1;i<=NUM_Q;i++){
-    const q = document.createElement('div');
-    q.className = 'question';
-    q.innerHTML = `
-      <div class="q-left">
-        <div class="qnum">${i}</div>
-        <div class="qtext">Question ${i}</div>
-      </div>
-      <div class="choices" role="radiogroup" aria-label="Question ${i} choix">
-        ${['A','B','C','D','E','F'].map(letter => `
-          <label>
-            <input type="radio" name="q${i}" value="${letter}" />
-            <span class="choice">${letter}</span>
-          </label>
-        `).join('')}
-      </div>
-    `;
-    quiz.appendChild(q);
+document.getElementById("submit").addEventListener("click", ()=>{
+  let out = [];
+  for(let i=1;i<=6;i++){
+    let sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if(!sel) out.push('?');
+    else out.push(map[sel.value] ?? '?');
   }
-
-  const output = document.getElementById('output');
-  const computeBtn = document.getElementById('compute');
-  const resetBtn = document.getElementById('reset');
-
-  function computeResult(){
-    const result = [];
-    for(let i=1;i<=NUM_Q;i++){
-      const sel = document.querySelector(`input[name="q${i}"]:checked`);
-      if(!sel){
-        // aucune réponse => "?"
-        result.push('?');
-      } else {
-        const val = valuesMap[sel.value];
-        result.push(val === null ? '?' : val);
-      }
-    }
-    return result;
-  }
-
-  computeBtn.addEventListener('click', function(){
-    const arr = computeResult();
-    // Formatage: [x, y, z]
-    const text = '[' + arr.map(e => (typeof e === 'number' ? e : '?')).join(', ') + ']';
-    output.textContent = text;
-    output.style.display = 'inline-block';
-  });
-
-  resetBtn.addEventListener('click', function(){
-    // décocher tout
-    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-    output.style.display = 'none';
-  });
-
-  // accessibilité: allow Enter on focused radio label
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
-      const active = document.activeElement;
-      if(active && active.tagName === 'INPUT' && active.type === 'radio'){
-        active.checked = true;
-        e.preventDefault();
-      }
-    }
-  });
-
-  // Affichage initial d'exemple (facultatif) : masqué jusqu'à clic
-  // output.textContent = '[' + Array(NUM_Q).fill('?').join(', ') + ']';
-})();
+  document.getElementById("result").textContent = "[" + out.join(", ") + "]";
+});
 </script>
+
 </body>
 </html>
