@@ -1,340 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Noctadex</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Test de personnalité — Minimal</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: radial-gradient(circle at top, #5b21b6, #2e1065 80%);
-    color: #fff;
-    min-height: 100vh;
-    padding: 20px;
-    position: relative;
-    overflow-x: hidden;
+  :root{
+    --bg: #ffffff;
+    --text: #111;
+    --muted: #6b6b6b;
+    --accent: #000;
+    --card-shadow: rgba(0,0,0,0.04);
   }
-  body::before {
-    content: "";
-    position: absolute;
-    top:0; left:0; right:0; bottom:0;
-    background: url("https://www.transparenttextures.com/patterns/stardust.png");
-    opacity: 0.18;
-    z-index: 0;
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:var(--bg);
+    color:var(--text);
   }
-  h1 {
-    text-align: center;
-    font-size: 2.6rem;
-    margin-bottom: 8px;
-    text-shadow: 0 0 12px rgba(255,255,255,0.6), 0 0 25px #a78bfa;
-    z-index: 1;
-    position: relative;
+  .wrap{
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 16px;
   }
-  #stats {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.15rem;
-    text-shadow: 0 0 8px rgba(255,255,255,0.45);
-    position: relative;
-    z-index: 1;
+  .card{
+    width:760px;
+    max-width:100%;
+    background:transparent;
+    box-shadow: 0 6px 24px var(--card-shadow);
+    border-radius:12px;
+    padding:28px;
   }
-  .controls {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 36px;
-    z-index: 1;
-    position: relative;
+  h1{
+    margin:0 0 12px 0;
+    font-size:20px;
+    font-weight:600;
   }
-  .btn-open-pack {
-    padding: 14px 36px;
-    border: none;
-    border-radius: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    background: linear-gradient(45deg, #facc15, #f97316, #7c3aed);
-    background-size: 300% 300%;
-    color: #fff;
-    transition: all 0.32s ease;
-    font-size: 1.05rem;
-    box-shadow: 0 0 25px rgba(250,204,21,0.6), inset 0 0 10px rgba(124,58,237,0.4);
-    position: relative;
-    overflow: hidden;
+  p.lead{
+    margin:0 0 20px 0;
+    color:var(--muted);
+    font-size:13px;
   }
-  .btn-open-pack::after {
-    content: "";
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.18) 10%, transparent 60%);
-    animation: pulse 3.5s infinite;
-    pointer-events: none;
+  .question{
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:rgba(0,0,0,0.02);
   }
-  @keyframes pulse {
-    0% { transform: rotate(0deg); opacity: 0.8; }
-    50% { transform: rotate(180deg); opacity: 0.25; }
-    100% { transform: rotate(360deg); opacity: 0.8; }
+  .q-left{
+    display:flex;
+    gap:12px;
+    align-items:center;
   }
-  .btn-open-pack:hover:enabled { transform: scale(1.06); background-position: 100% 50%; }
-  .btn-open-pack:disabled { opacity: 0.6; cursor: default; transform: none; filter: grayscale(0.1); }
-
-  #overlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.82);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1200;
-    padding: 20px;
+  .qnum{
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    font-weight:600;
   }
-
-  .pack-image {
-    width: 220px;
-    height: 300px;
-    background: url('https://via.placeholder.com/220x300?text=PAQUET') center/cover;
-    border-radius: 15px;
-    cursor: pointer;
-    box-shadow: 0 0 30px rgba(255,255,255,0.4);
-    transition: transform 0.25s ease;
+  .qtext{ font-size:14px; color:var(--muted); }
+  .choices{
+    display:flex;
+    gap:8px;
   }
-  .pack-image:hover { transform: scale(1.04); }
-
-  .big-card {
-    width: 300px;
-    max-width: 92%;
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
-    text-align: center;
-    cursor: pointer;
-    color: #000;
-    font-weight: 700;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+  label.choice{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:36px;
+    border-radius:8px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,0.06);
+    cursor:pointer;
+    font-weight:600;
+    user-select:none;
   }
-  .big-card img {
-    width: 100%;
-    height: 100%;
-    flex-grow: 1;
-    object-fit: cover;
-    display: block;
+  input[type="radio"]{ display:none; }
+  input[type="radio"]:checked + .choice{
+    border-color:var(--accent);
+    box-shadow:0 4px 16px rgba(0,0,0,0.06);
+    transform:translateY(-1px);
   }
-  .big-card .meta {
-    padding: 10px;
-    font-size: 1rem;
-    color: #111;
+  .actions{
+    margin-top:18px;
+    display:flex;
+    gap:12px;
+    align-items:center;
   }
-  .rarity {
-    font-size: 0.85rem;
-    color: #444;
+  button{
+    background:var(--accent);
+    color:#fff;
+    border:0;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
   }
-
-  #collectionContainer {
-    max-width: 1100px;
-    margin: 28px auto 80px auto;
-    position: relative;
-    z-index: 1;
+  button.secondary{
+    background:#fff;
+    color:var(--text);
+    border:1px solid rgba(0,0,0,0.06);
   }
-  .collection-category { margin-bottom: 28px; }
-  .collection-title {
-    font-size: 1.45rem;
-    margin-bottom: 12px;
-    padding: 6px 12px;
-    display: inline-block;
-    background: linear-gradient(to right, rgba(255,255,255,0.06), rgba(124,58,237,0.18));
-    border-left: 4px solid #a78bfa;
-    border-radius: 8px;
-    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  .result{
+    margin-top:18px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    font-size:16px;
+    padding:14px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.02);
+    display:inline-block;
   }
-  .collection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 18px;
+  .small{
+    font-size:13px;
+    color:var(--muted);
+    margin-left:6px;
   }
-  .card {
-    background: rgba(255,255,255,0.12);
-    border: 2px solid rgba(255,255,255,0.2);
-    border-radius: 16px;
-    height: 210px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    overflow: hidden;
-    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-    box-shadow: 0 0 14px rgba(0,0,0,0.28);
-  }
-  .card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255,255,255,0.95);
-    box-shadow: 0 22px 44px rgba(0,0,0,0.45);
-  }
-  .card.locked {
-    background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(0,0,0,0.15));
-    border: 2px dashed rgba(255,255,255,0.22);
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .card.locked::before {
-    content: "???";
-    color: rgba(255,255,255,0.55);
-    font-size: 1.25rem;
-    font-weight: 800;
-    position: absolute;
-  }
-  @media (max-width:600px){
-    h1 { font-size: 1.9rem; }
-    .btn-open-pack { padding: 12px 22px; font-size: 0.95rem; }
+  .footer{
+    margin-top:20px;
+    color:var(--muted);
+    font-size:13px;
   }
 </style>
 </head>
 <body>
-<h1>Noctadex</h1>
-<div id="stats">Cartes possédées: 0 / 21</div>
-<div class="controls">
-  <button class="btn-open-pack" id="openBtn" type="button">Ouvrir un paquet</button>
+<div class="wrap">
+  <main class="card" role="main" aria-labelledby="title">
+    <h1 id="title">Test de personnalité (6 questions)</h1>
+    <p class="lead">Choisissez une réponse A → F pour chaque question. Les valeurs : A=14, B=33, C=52, D=71, E=91, F=?</p>
+
+    <form id="quiz">
+      <!-- Généré JS : 6 questions -->
+    </form>
+
+    <div class="actions">
+      <button id="compute" type="button">Afficher le résultat</button>
+      <button id="reset" class="secondary" type="button">Réinitialiser</button>
+      <div class="small">Format du résultat : un tableau en ordre des questions.</div>
+    </div>
+
+    <div id="output" class="result" aria-live="polite" style="display:none;">[?, 14, 71, 52, 91, ?]</div>
+
+    <div class="footer">Style minimaliste — fond blanc.</div>
+  </main>
 </div>
-<div id="overlay">
-  <div id="overlayContent"></div>
-</div>
-<div id="collectionContainer"></div>
+
 <script>
 (function(){
-  const CARDS = [
-    { id: "T1", name: "Chouette", rarity: "triadique", imageUrl: "Cartes/Chouette.jpeg" },
-    { id: "T2", name: "Paon", rarity: "triadique", imageUrl: "Cartes/Paon.jpeg" },
-    { id: "T3", name: "Corbeau", rarity: "triadique", imageUrl: "Cartes/Corbeau.jpeg" },
-    { id: "M1", name: "Alice", rarity: "mythique", imageUrl: "Cartes/Alice.png" },
-    { id: "M2", name: "Mehdi", rarity: "mythique", imageUrl: "Cartes/Medhi.jpeg" },
-    { id: "M3", name: "Le Joueur", rarity: "mythique", imageUrl: "Cartes/Le Joueur.png" },
-    { id: "M4", name: "Sherlock Holmes", rarity: "mythique", imageUrl: "Cartes/Sherlock Holmes.jpeg" },
-    { id: "R1", name: "Breakfast", rarity: "rare", imageUrl: "Cartes/Breakfast.jpeg" },
-    { id: "R2", name: "Edward Norton", rarity: "rare", imageUrl: "Cartes/Edward Norton.jpeg" },
-    { id: "R3", name: "Joe Goldberg", rarity: "rare", imageUrl: "Cartes/Joe Goldberg.jpeg" },
-    { id: "R4", name: "Magician", rarity: "rare", imageUrl: "Cartes/Magician.jpeg" },
-    { id: "R5", name: "Miranda Priestley", rarity: "rare", imageUrl: "Cartes/Miranda Priestley.jpeg" },
-    { id: "R6", name: "Professeur", rarity: "rare", imageUrl: "Cartes/Professeur.jpeg" },
-    { id: "R7", name: "Split", rarity: "rare", imageUrl: "Cartes/Split.jpeg" },
-    { id: "C1", name: "Kyan Khojandi", rarity: "commune", imageUrl: "Cartes/Kyan Khojandi.jpeg" },
-    { id: "C2", name: "Belle & Sébastien", rarity: "commune", imageUrl: "Cartes/Belle & Sébastien.jpeg" },
-    { id: "C3", name: "The End", rarity: "commune", imageUrl: "Cartes/The End.jpeg" },
-    { id: "C4", name: "The Wolf of Wall Street", rarity: "commune", imageUrl: "Cartes/The Wolf of Wall Street.jpeg" },
-    { id: "C5", name: "Vague", rarity: "commune", imageUrl: "Cartes/Vague.jpeg" },
-    { id: "C6", name: "Ashton Kutcher", rarity: "commune", imageUrl: "Cartes/Ashton Kutcher.jpeg" }
-  ];
-  const PROBABILITIES = { commune: 0.7, rare: 0.2, mythique: 0.08, triadique: 0.02 };
+  const valuesMap = {
+    'A': 14,
+    'B': 33,
+    'C': 52,
+    'D': 71,
+    'E': 91,
+    'F': null   // "?" value: represented by null internally, displayed as "?"
+  };
 
-  let collection = JSON.parse(localStorage.getItem('collection') || '{}');
-  let revealQueue = [];
-  let currentIndex = -1;
+  const quiz = document.getElementById('quiz');
 
-  function weightedPick(probabilities) {
-    let r = Math.random(), cumulative = 0;
-    for (const [rarity, prob] of Object.entries(probabilities)) {
-      cumulative += prob;
-      if (r <= cumulative) return rarity;
+  // Crée 6 questions
+  const NUM_Q = 6;
+  for(let i=1;i<=NUM_Q;i++){
+    const q = document.createElement('div');
+    q.className = 'question';
+    q.innerHTML = `
+      <div class="q-left">
+        <div class="qnum">${i}</div>
+        <div class="qtext">Question ${i}</div>
+      </div>
+      <div class="choices" role="radiogroup" aria-label="Question ${i} choix">
+        ${['A','B','C','D','E','F'].map(letter => `
+          <label>
+            <input type="radio" name="q${i}" value="${letter}" />
+            <span class="choice">${letter}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+    quiz.appendChild(q);
+  }
+
+  const output = document.getElementById('output');
+  const computeBtn = document.getElementById('compute');
+  const resetBtn = document.getElementById('reset');
+
+  function computeResult(){
+    const result = [];
+    for(let i=1;i<=NUM_Q;i++){
+      const sel = document.querySelector(`input[name="q${i}"]:checked`);
+      if(!sel){
+        // aucune réponse => "?"
+        result.push('?');
+      } else {
+        const val = valuesMap[sel.value];
+        result.push(val === null ? '?' : val);
+      }
     }
-    return 'commune';
+    return result;
   }
-  function drawCard() {
-    const rarity = weightedPick(PROBABILITIES);
-    const pool = CARDS.filter(c => c.rarity === rarity);
-    if (!pool.length) return CARDS[Math.floor(Math.random() * CARDS.length)];
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
-  function generatePack() {
-    const pack = [];
-    for (let i = 0; i < 5; i++) {
-      const card = drawCard();
-      if (!card) continue;
-      pack.push(card);
-      collection[card.id] = (collection[card.id] || 0) + 1;
-    }
-    localStorage.setItem('collection', JSON.stringify(collection));
-    return pack;
-  }
-  function showPackOverlay() {
-    document.getElementById('openBtn').disabled = true;
-    revealQueue = generatePack();
-    currentIndex = -1;
-    const overlay = document.getElementById('overlay');
-    overlay.style.display = 'flex';
-    document.getElementById('overlayContent').innerHTML =
-      `<div class="pack-image" id="packImage" role="button" aria-label="Cliquer pour révéler la première carte"></div>`;
-  }
-  function revealNextCard() {
-    const content = document.getElementById('overlayContent');
-    currentIndex++;
-    if (currentIndex < revealQueue.length) {
-      const c = revealQueue[currentIndex];
-      content.innerHTML =
-        `<div class="big-card" id="bigCard" role="button" aria-label="Cliquer pour révéler la carte suivante">
-           <img src="${escapeHtml(c.imageUrl)}" alt="${escapeHtml(c.name)}">
-           <div class="meta"><div class="rarity">${escapeHtml(c.rarity)}</div></div>
-         </div>`;
-    } else {
-      document.getElementById('overlay').style.display = 'none';
-      renderCollection();
-      updateStats();
-      document.getElementById('openBtn').disabled = false;
-    }
-  }
-  function renderCollection() {
-    const container = document.getElementById('collectionContainer');
-    container.innerHTML = '';
-    const categories = ['commune','rare','mythique','triadique'];
-    categories.forEach(rarity => {
-      const cardsOfRarity = CARDS.filter(c => c.rarity === rarity);
-      if (cardsOfRarity.length === 0) return;
-      const catDiv = document.createElement('div');
-      catDiv.className = 'collection-category';
-      const title = document.createElement('div');
-      title.className = 'collection-title';
-      title.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-      catDiv.appendChild(title);
-      const grid = document.createElement('div');
-      grid.className = 'collection-grid';
-      cardsOfRarity.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        if(collection[c.id]) {
-          el.innerHTML = `<img src="${c.imageUrl}" alt="${c.name}"/>`;
-        } else {
-          el.style.background = "rgba(255,255,255,0.05)";
-          el.style.border = "2px dashed rgba(255,255,255,0.2)";
-          el.innerHTML = `<div style="color:rgba(255,255,255,0.4); font-size:1.2rem;">???</div>`;
-        }
-        grid.appendChild(el);
-      });
-      catDiv.appendChild(grid);
-      container.appendChild(catDiv);
-    });
-  }
-  function updateStats() {
-    const obtained = Object.keys(collection).filter(k => collection[k] > 0).length;
-    const total = CARDS.length;
-    document.getElementById('stats').textContent = `Cartes possédées: ${obtained} / ${total}`;
-  }
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]);
-  }
-  document.getElementById('openBtn').addEventListener('click', showPackOverlay);
-  document.getElementById('overlayContent').addEventListener('click', function(){
-    if (document.getElementById('overlay').style.display !== 'flex') return;
-    revealNextCard();
+
+  computeBtn.addEventListener('click', function(){
+    const arr = computeResult();
+    // Formatage: [x, y, z]
+    const text = '[' + arr.map(e => (typeof e === 'number' ? e : '?')).join(', ') + ']';
+    output.textContent = text;
+    output.style.display = 'inline-block';
   });
-  renderCollection();
-  updateStats();
+
+  resetBtn.addEventListener('click', function(){
+    // décocher tout
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    output.style.display = 'none';
+  });
+
+  // accessibilité: allow Enter on focused radio label
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      const active = document.activeElement;
+      if(active && active.tagName === 'INPUT' && active.type === 'radio'){
+        active.checked = true;
+        e.preventDefault();
+      }
+    }
+  });
+
+  // Affichage initial d'exemple (facultatif) : masqué jusqu'à clic
+  // output.textContent = '[' + Array(NUM_Q).fill('?').join(', ') + ']';
 })();
 </script>
 </body>
