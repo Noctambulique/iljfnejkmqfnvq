@@ -4,33 +4,23 @@
 <meta charset="utf-8">
 <title>Test</title>
 <style>
-  body { font-family: Arial, sans-serif; background:#fff; margin:0; padding:40px; color:#111; }
+  body { font-family: Arial; background:#fff; padding:40px; }
   .container { max-width:480px; margin:auto; }
   .question-box { display:none; }
   .question { font-size:18px; margin-bottom:20px; }
   .choice {
-    display:block; 
-    padding:12px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    margin-bottom:10px;
-    cursor:pointer;
+    display:block; padding:12px; border:1px solid #ccc;
+    border-radius:8px; margin-bottom:10px; cursor:pointer;
+    background:#fafafa;
   }
   .choice:hover { border-color:#000; }
   #nextBtn {
-    padding:10px 16px;
-    background:#000;
-    color:#fff;
-    border:0;
-    border-radius:8px;
-    cursor:pointer;
-    display:none;
-    margin-top:20px;
+    padding:10px 16px; background:#000; color:#fff;
+    border:0; border-radius:8px; cursor:pointer;
+    display:none; margin-top:20px;
   }
   #result {
-    font-family:monospace;
-    font-size:20px;
-    margin-top:30px;
+    font-family:monospace; font-size:20px; margin-top:30px;
   }
 </style>
 </head>
@@ -38,66 +28,9 @@
 
 <div class="container">
 
-  <!-- 6 questions affichées une par une -->
-  <div class="question-box" id="q1">
-    <div class="question">1️⃣ Comment réagis-tu lors d’un imprévu ?</div>
-    <div class="choice" data-value="A">A — Je m’adapte vite</div>
-    <div class="choice" data-value="B">B — Je planifie immédiatement</div>
-    <div class="choice" data-value="C">C — Je reste neutre</div>
-    <div class="choice" data-value="D">D — Je panique un peu</div>
-    <div class="choice" data-value="E">E — J’adore les imprévus !</div>
-    <div class="choice" data-value="F">F — Je bloque totalement</div>
-  </div>
+  <h2>Test</h2>
 
-  <div class="question-box" id="q2">
-    <div class="question">2️⃣ Quand tu dois choisir un film :</div>
-    <div class="choice" data-value="A">A — Action / aventure</div>
-    <div class="choice" data-value="B">B — Drame</div>
-    <div class="choice" data-value="C">C — Comédie</div>
-    <div class="choice" data-value="D">D — Thriller</div>
-    <div class="choice" data-value="E">E — Expérimental / surprenant</div>
-    <div class="choice" data-value="F">F — Je laisse choisir les autres</div>
-  </div>
-
-  <div class="question-box" id="q3">
-    <div class="question">3️⃣ Tu travailles plutôt :</div>
-    <div class="choice" data-value="A">A — En équipe</div>
-    <div class="choice" data-value="B">B — Sous pression</div>
-    <div class="choice" data-value="C">C — Avec méthode</div>
-    <div class="choice" data-value="D">D — À la dernière minute</div>
-    <div class="choice" data-value="E">E — Selon inspiration</div>
-    <div class="choice" data-value="F">F — Quand vraiment nécessaire</div>
-  </div>
-
-  <div class="question-box" id="q4">
-    <div class="question">4️⃣ Ton apéro idéal :</div>
-    <div class="choice" data-value="A">A — Classique & calme</div>
-    <div class="choice" data-value="B">B — Chic & organisé</div>
-    <div class="choice" data-value="C">C — Avec beaucoup d’amis</div>
-    <div class="choice" data-value="D">D — Ambiance mystérieuse</div>
-    <div class="choice" data-value="E">E — Totalement fou</div>
-    <div class="choice" data-value="F">F — Je préfère rester chez moi</div>
-  </div>
-
-  <div class="question-box" id="q5">
-    <div class="question">5️⃣ Dans un groupe, tu es plutôt :</div>
-    <div class="choice" data-value="A">A — Le médiateur</div>
-    <div class="choice" data-value="B">B — Le cerveau</div>
-    <div class="choice" data-value="C">C — L’humoriste</div>
-    <div class="choice" data-value="D">D — L’observateur</div>
-    <div class="choice" data-value="E">E — L’énergique</div>
-    <div class="choice" data-value="F">F — Le discret</div>
-  </div>
-
-  <div class="question-box" id="q6">
-    <div class="question">6️⃣ Ton meilleur moment de la journée :</div>
-    <div class="choice" data-value="A">A — Le matin</div>
-    <div class="choice" data-value="B">B — L’après-midi</div>
-    <div class="choice" data-value="C">C — Le soir</div>
-    <div class="choice" data-value="D">D — La nuit</div>
-    <div class="choice" data-value="E">E — Tout le temps</div>
-    <div class="choice" data-value="F">F — Aucun en particulier</div>
-  </div>
+  <div id="questions"></div>
 
   <button id="nextBtn">Continuer</button>
   <div id="result"></div>
@@ -105,33 +38,179 @@
 </div>
 
 <script>
-const map = {A:14, B:33, C:52, D:71, E:91, F:null};
+// Valeurs de scoring
+const values = {A:7, B:16.5, C:26, D:35.5, E:45.5};
 
-let current = 1;
+// Questions & réponses personnalisables
+const quizData = [
+  {
+    q: "Comment réagis-tu lors d’un imprévu ?",
+    answers: {
+      A: "Je m’adapte vite",
+      B: "J’organise immédiatement",
+      C: "Je reste neutre",
+      D: "Je panique un peu",
+      E: "J’adore les imprévus"
+    }
+  },
+  {
+    q: "Tu choisis un film :",
+    answers: {
+      A: "Action / aventure",
+      B: "Drame",
+      C: "Comédie",
+      D: "Thriller",
+      E: "Expérimental"
+    }
+  },
+  {
+    q: "Tu travailles :",
+    answers: {
+      A: "En équipe",
+      B: "Sous pression",
+      C: "Avec méthode",
+      D: "À la dernière minute",
+      E: "Selon l’inspiration"
+    }
+  },
+  {
+    q: "Ton apéro idéal :",
+    answers: {
+      A: "Calme & classique",
+      B: "Chic & organisé",
+      C: "Beaucoup d’amis",
+      D: "Mystérieux",
+      E: "Très animé"
+    }
+  },
+  {
+    q: "Dans un groupe, tu es :",
+    answers: {
+      A: "Le médiateur",
+      B: "Le cerveau",
+      C: "L’humoriste",
+      D: "L’observateur",
+      E: "L’énergique"
+    }
+  },
+  {
+    q: "Ton moment préféré de la journée :",
+    answers: {
+      A: "Le matin",
+      B: "L’après-midi",
+      C: "Le soir",
+      D: "La nuit",
+      E: "Tout le temps"
+    }
+  },
+  {
+    q: "Plans du week-end :",
+    answers: {
+      A: "Famille",
+      B: "Travail ou projets",
+      C: "Amis",
+      D: "Netflix",
+      E: "Aventure"
+    }
+  },
+  {
+    q: "Ton rythme de vie :",
+    answers: {
+      A: "Plutôt calme",
+      B: "Bien organisé",
+      C: "Social et varié",
+      D: "Imprévisible",
+      E: "Toujours à fond"
+    }
+  },
+  {
+    q: "Face à un défi :",
+    answers: {
+      A: "Je m’aide des autres",
+      B: "Je fonce",
+      C: "Je réfléchis",
+      D: "Je procrastine",
+      E: "Je me motive"
+    }
+  },
+  {
+    q: "Tu préfères parler :",
+    answers: {
+      A: "Face à face",
+      B: "Par message",
+      C: "En groupe",
+      D: "Peu",
+      E: "Tout le temps"
+    }
+  },
+  {
+    q: "Organisation ou spontanéité ?",
+    answers: {
+      A: "Planification",
+      B: "Semi-planifié",
+      C: "Un peu des deux",
+      D: "Dernière minute",
+      E: "Impro totale"
+    }
+  },
+  {
+    q: "Ton humeur générale :",
+    answers: {
+      A: "Stable",
+      B: "Sérieux",
+      C: "Joyeux",
+      D: "Mystérieux",
+      E: "Survolté"
+    }
+  }
+];
+
+let current = 0;
 let answers = [];
 
-function showQuestion(n){
-  document.querySelectorAll('.question-box').forEach(q => q.style.display="none");
-  document.getElementById("q"+n).style.display="block";
-}
+const container = document.getElementById("questions");
 
-showQuestion(current);
-
-document.querySelectorAll('.choice').forEach(choice=>{
-  choice.addEventListener('click',()=>{
-    answers[current-1] = map[choice.dataset.value] ?? '?';
-    document.getElementById("nextBtn").style.display="inline-block";
-  });
+// Génération dynamique
+quizData.forEach((item, i)=>{
+  let html = `<div class="question-box" id="q${i}">
+    <div class="question">${i+1}️⃣ ${item.q}</div>
+  `;
+  for(let letter in item.answers){
+    html += `<div class="choice" data-value="${letter}">${letter} — ${item.answers[letter]}</div>`;
+  }
+  html += `</div>`;
+  container.innerHTML += html;
 });
 
-document.getElementById("nextBtn").addEventListener("click",()=>{
+function show(n){
+  document.querySelectorAll('.question-box').forEach(q=>q.style.display="none");
+  document.getElementById("q"+n).style.display="block";
+}
+show(current);
+
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains("choice")){
+    let letter = e.target.dataset.value;
+    answers[current] = values[letter];
+    document.getElementById("nextBtn").style.display="inline-block";
+  }
+});
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
   current++;
   document.getElementById("nextBtn").style.display="none";
-  if(current <= 6){
-    showQuestion(current);
+  if(current < quizData.length){
+    show(current);
   } else {
-    document.querySelectorAll('.question-box').forEach(q => q.style.display="none");
-    document.getElementById("result").textContent = "["+answers.join(", ")+"]";
+    document.querySelectorAll('.question-box').forEach(q=>q.style.display="none");
+
+    // Calcul final par paire
+    let result = [];
+    for(let i=0;i<12;i+=2){
+      result.push(answers[i] + answers[i+1]);
+    }
+
+    document.getElementById("result").textContent = "[" + result.join(", ") + "]";
   }
 });
 </script>
