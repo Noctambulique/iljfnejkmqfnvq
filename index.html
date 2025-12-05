@@ -4,136 +4,135 @@
 <meta charset="utf-8">
 <title>Test</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background:#fff;
-    padding:20px;
-    color:#111;
-  }
-  h2 { font-size:18px; margin-bottom:10px; }
-  .row {
-    display:flex;
-    align-items:center;
-    margin:10px 0;
-  }
-  .row span {
-    width:80px;
-    font-weight:bold;
-    font-size:14px;
-  }
-  .grid {
-    display:grid;
-    grid-template-columns:repeat(6, 36px);
-    gap:8px;
-  }
+  body { font-family: Arial, sans-serif; background:#fff; margin:0; padding:40px; color:#111; }
+  .container { max-width:480px; margin:auto; }
+  .question-box { display:none; }
+  .question { font-size:18px; margin-bottom:20px; }
   .choice {
-    width:36px;
-    height:36px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:block; 
+    padding:12px;
     border:1px solid #ccc;
-    border-radius:6px;
+    border-radius:8px;
+    margin-bottom:10px;
     cursor:pointer;
-    user-select:none;
-    font-size:14px;
   }
-  input[type="radio"] { display:none; }
-  input[type="radio"]:checked + .choice {
-    border:2px solid #000;
-    font-weight:bold;
-  }
-  button {
+  .choice:hover { border-color:#000; }
+  #nextBtn {
     padding:10px 16px;
-    border:0;
     background:#000;
     color:#fff;
+    border:0;
     border-radius:8px;
     cursor:pointer;
+    display:none;
     margin-top:20px;
   }
   #result {
-    margin-top:20px;
     font-family:monospace;
-    font-size:18px;
+    font-size:20px;
+    margin-top:30px;
   }
 </style>
 </head>
 <body>
 
-<h2>Test</h2>
+<div class="container">
 
-<form id="quiz">
-  <div class="row">
-    <span>Q1</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q1" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <!-- 6 questions affichées une par une -->
+  <div class="question-box" id="q1">
+    <div class="question">1️⃣ Comment réagis-tu lors d’un imprévu ?</div>
+    <div class="choice" data-value="A">A — Je m’adapte vite</div>
+    <div class="choice" data-value="B">B — Je planifie immédiatement</div>
+    <div class="choice" data-value="C">C — Je reste neutre</div>
+    <div class="choice" data-value="D">D — Je panique un peu</div>
+    <div class="choice" data-value="E">E — J’adore les imprévus !</div>
+    <div class="choice" data-value="F">F — Je bloque totalement</div>
   </div>
 
-  <div class="row">
-    <span>Q2</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q2" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <div class="question-box" id="q2">
+    <div class="question">2️⃣ Quand tu dois choisir un film :</div>
+    <div class="choice" data-value="A">A — Action / aventure</div>
+    <div class="choice" data-value="B">B — Drame</div>
+    <div class="choice" data-value="C">C — Comédie</div>
+    <div class="choice" data-value="D">D — Thriller</div>
+    <div class="choice" data-value="E">E — Expérimental / surprenant</div>
+    <div class="choice" data-value="F">F — Je laisse choisir les autres</div>
   </div>
 
-  <div class="row">
-    <span>Q3</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q3" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <div class="question-box" id="q3">
+    <div class="question">3️⃣ Tu travailles plutôt :</div>
+    <div class="choice" data-value="A">A — En équipe</div>
+    <div class="choice" data-value="B">B — Sous pression</div>
+    <div class="choice" data-value="C">C — Avec méthode</div>
+    <div class="choice" data-value="D">D — À la dernière minute</div>
+    <div class="choice" data-value="E">E — Selon inspiration</div>
+    <div class="choice" data-value="F">F — Quand vraiment nécessaire</div>
   </div>
 
-  <div class="row">
-    <span>Q4</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q4" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <div class="question-box" id="q4">
+    <div class="question">4️⃣ Ton apéro idéal :</div>
+    <div class="choice" data-value="A">A — Classique & calme</div>
+    <div class="choice" data-value="B">B — Chic & organisé</div>
+    <div class="choice" data-value="C">C — Avec beaucoup d’amis</div>
+    <div class="choice" data-value="D">D — Ambiance mystérieuse</div>
+    <div class="choice" data-value="E">E — Totalement fou</div>
+    <div class="choice" data-value="F">F — Je préfère rester chez moi</div>
   </div>
 
-  <div class="row">
-    <span>Q5</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q5" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <div class="question-box" id="q5">
+    <div class="question">5️⃣ Dans un groupe, tu es plutôt :</div>
+    <div class="choice" data-value="A">A — Le médiateur</div>
+    <div class="choice" data-value="B">B — Le cerveau</div>
+    <div class="choice" data-value="C">C — L’humoriste</div>
+    <div class="choice" data-value="D">D — L’observateur</div>
+    <div class="choice" data-value="E">E — L’énergique</div>
+    <div class="choice" data-value="F">F — Le discret</div>
   </div>
 
-  <div class="row">
-    <span>Q6</span>
-    <div class="grid">
-      ${['A','B','C','D','E','F'].map(l=>`
-        <label><input type="radio" name="q6" value="${l}"><div class="choice">${l}</div></label>
-      `).join('')}
-    </div>
+  <div class="question-box" id="q6">
+    <div class="question">6️⃣ Ton meilleur moment de la journée :</div>
+    <div class="choice" data-value="A">A — Le matin</div>
+    <div class="choice" data-value="B">B — L’après-midi</div>
+    <div class="choice" data-value="C">C — Le soir</div>
+    <div class="choice" data-value="D">D — La nuit</div>
+    <div class="choice" data-value="E">E — Tout le temps</div>
+    <div class="choice" data-value="F">F — Aucun en particulier</div>
   </div>
-</form>
 
-<button type="button" id="submit">Résultat</button>
+  <button id="nextBtn">Continuer</button>
+  <div id="result"></div>
 
-<div id="result"></div>
+</div>
 
 <script>
 const map = {A:14, B:33, C:52, D:71, E:91, F:null};
 
-document.getElementById("submit").addEventListener("click", ()=>{
-  let out = [];
-  for(let i=1;i<=6;i++){
-    let sel = document.querySelector(`input[name="q${i}"]:checked`);
-    if(!sel) out.push('?');
-    else out.push(map[sel.value] ?? '?');
+let current = 1;
+let answers = [];
+
+function showQuestion(n){
+  document.querySelectorAll('.question-box').forEach(q => q.style.display="none");
+  document.getElementById("q"+n).style.display="block";
+}
+
+showQuestion(current);
+
+document.querySelectorAll('.choice').forEach(choice=>{
+  choice.addEventListener('click',()=>{
+    answers[current-1] = map[choice.dataset.value] ?? '?';
+    document.getElementById("nextBtn").style.display="inline-block";
+  });
+});
+
+document.getElementById("nextBtn").addEventListener("click",()=>{
+  current++;
+  document.getElementById("nextBtn").style.display="none";
+  if(current <= 6){
+    showQuestion(current);
+  } else {
+    document.querySelectorAll('.question-box').forEach(q => q.style.display="none");
+    document.getElementById("result").textContent = "["+answers.join(", ")+"]";
   }
-  document.getElementById("result").textContent = "[" + out.join(", ") + "]";
 });
 </script>
 
