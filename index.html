@@ -13,6 +13,10 @@
     border-radius:8px; margin-bottom:10px; cursor:pointer;
     background:#fafafa;
   }
+  .choice.selected {
+  background:#c7f7c2;
+  border-color:#2e8b57;
+}
   .choice:hover { border-color:#000; }
   #nextBtn {
     padding:10px 16px; background:#000; color:#fff;
@@ -190,11 +194,19 @@ show(current);
 
 document.addEventListener('click', (e)=>{
   if(e.target.classList.contains("choice")){
+    // retire le vert sur les autres réponses de la même question
+    const parent = e.target.parentElement;
+    parent.querySelectorAll('.choice').forEach(c=>c.classList.remove('selected'));
+
+    // ajoute le surlignage vert
+    e.target.classList.add("selected");
+
     let letter = e.target.dataset.value;
     answers[current] = values[letter];
     document.getElementById("nextBtn").style.display="inline-block";
   }
 });
+
 
 document.getElementById("nextBtn").addEventListener("click", ()=>{
   current++;
