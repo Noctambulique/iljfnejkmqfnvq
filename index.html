@@ -47,26 +47,29 @@ const values = {A:7, B:16.5, C:26, D:35.5, E:45.5};
 // Questions & réponses personnalisables
 const quizData = [
   {
+    // Conscience
     q: " J'ai envie de lancer un projet",
     answers: {
       A: "Je me lance sans réfléchir, on apprend sur le terrain !",
       B: "Je définis les objectifs et je me lance",
       C: "Je cherche à avoir une base théoriques",
       D: "Je note un max d'informations ",
-      E: " Je prépare un plan précis qui contient toutes les éventualités",
+      E: "Je prépare un plan précis qui contient toutes les éventualités",
     }
   },
-  {
-    q: "Tu choisis un film :",
-    answers: {
-      A: "Action / aventure",
-      B: "Drame",
-      C: "Comédie",
-      D: "Thriller",
-      E: "Expérimental"
-    }
+{
+      // Conscience
+  q: "Quelqu’un mentionne un hobby que je ne connais mal",
+  answers: {
+    A: "Je lui parle aussi de mes hobbys du moment",
+    B: "J'attends de voir s'il veut développer",
+    C: "Je lui poser des questions pour voir si ça peut me plaire",
+    D: "Je pose une question pour comprendre mieux ce dont il s'agit",
+    E: "Je relie ça à sa personnalité pour saisir le sens"
+  }
   },
   {
+        // AC
     q: "Quelqu'un vous pose une question indiscrète :",
     answers: {
       A: "Je réponds pour ne pas le gêner",
@@ -77,16 +80,18 @@ const quizData = [
     }
   },
   {
-    q: "Ton apéro idéal :",
+            // AC
+    q: "Laquelle de ces phrases te semble la plus juste ?",
     answers: {
-      A: "Calme & classique",
-      B: "Chic & organisé",
-      C: "Beaucoup d’amis",
-      D: "Mystérieux",
-      E: "Très animé"
+      A: "Toute information sur soi est bonne à connaitre",
+      B: "Il y a peu de choses sur soi qu'il vaut mieux ignorer",
+      C: "Certaines choses sont bonnes à connaitre et d'autres non",
+      D: "Il y a beaucoup de choses sur soi qu'il vaut mieux ignorer",
+      E: "Mieux vaut ne pas trop se connaitre"
     }
   },
   {
+            // AF
     q: "Quelqu’un veut faire quelque chose de risqué :",
     answers: {
       A: "Je ne dis rien et je change de sujet",
@@ -97,16 +102,29 @@ const quizData = [
     }
   },
   {
-    q: "Ton moment préféré de la journée :",
+                // AF
+    q: "Quelle phrase te décrit le mieux ?",
     answers: {
-      A: "Le matin",
-      B: "L’après-midi",
-      C: "Le soir",
-      D: "La nuit",
-      E: "Tout le temps"
+      A: "La procrastination ? C'est quoi ?",
+      B: "Sur une journée j'arrive à être productif au moins 60% du temps",
+      C: "Sur une journée j'arrive à être productif au moins 30% du temps",
+      D: "Je repousse très souvent ce que je devrais faire",
+      E: "Je procrastine beaucoup"
     }
   },
   {
+                // F
+    q: "Laquelle de ces phrases décrit le mieux votre pensée ?",
+    answers: {
+      A: "Une bonne vie est une vie de repos et de plaisir",
+      B: "Chaque jour il faut avoir fait une petite chose",
+      C: "Dans une vie il faut équiliber activité et repos",
+      D: "Il faut avoir accompli au moins une chose importante une chose dans sa vie",
+      E: "Une bonne vie se mesure au nombre de choses qu'on a fait"
+    }
+    },
+  {
+                    // F
     q: "J’ai une tâche importante mais qui ne m’emballe pas :",
     answers: {
       A: "J’oublie / je laisse tomber",
@@ -117,16 +135,7 @@ const quizData = [
     }
   },
   {
-    q: "Face à un défi :",
-    answers: {
-      A: "Je m’aide des autres",
-      B: "Je fonce",
-      C: "Je réfléchis",
-      D: "Je procrastine",
-      E: "Je me motive"
-    }
-  },
-  {
+                    // PF
     q: "Il faut préparer un travail de groupe :?",
     answers: {
       A: "Je laisse les autres s’en occuper",
@@ -137,16 +146,29 @@ const quizData = [
     }
   },
     {
-    q: "Plans du week-end :",
+                      // PF
+    q: "Mes talents de motivation :",
     answers: {
-      A: "Famille",
-      B: "Travail ou projets",
-      C: "Amis",
-      D: "Netflix",
-      E: "Aventure"
+    A: "J’ai du mal à motiver les autres ou je ne m’en sens pas capable",
+    B: "Je peux encourager un peu, mais ce n’est pas vraiment mon point fort",
+    C: "Je réfléchis à la meilleure façon de motiver et j’y arrive parfois",
+    D: "Je motive efficacement quand je m’implique vraiment",
+    E: "Je suis très doué pour motiver les autres, même dans les situations difficiles"
     }
   },
     {
+                      // PC
+    q: "Les gens se confient à moi :",
+    answers: {
+      A: "Quasiment jamais",
+      B: "Rarement, et seulement pour des petites choses",
+      C: "Parfois, quand ils ont besoin",
+      D: "Souvent, même pour des sujets importants",
+      E: "Très souvent, ils me racontent tout naturellement"
+    }
+  },
+    {
+                            // PC
     q: "Un ami me semble dans un état inhabituel :",
     answers: {
       A: " S'il veut m'en parler, il le fera de lui-même",
@@ -154,16 +176,6 @@ const quizData = [
       C: "Je lui dis que s'il veut me parler il peut",
       D: "Je lui demande frontalement si tout va bien",
       E: "Je lui pose des tas de questions"
-    }
-  },
-  {
-    q: "Ton humeur générale :",
-    answers: {
-      A: "Stable",
-      B: "Sérieux",
-      C: "Joyeux",
-      D: "Mystérieux",
-      E: "Survolté"
     }
   }
 ];
