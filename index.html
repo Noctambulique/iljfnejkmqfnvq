@@ -1,240 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<style>
-  body { font-family: Arial; background:#fff; padding:40px; }
-  .container { max-width:480px; margin:auto; }
-  .question-box { display:none; }
-  .question { font-size:18px; margin-bottom:20px; }
-  .choice {
-    display:block; padding:12px; border:1px solid #ccc;
-    border-radius:8px; margin-bottom:10px; cursor:pointer;
-    background:#fafafa;
-  }
-  .choice.selected {
-  background:#c7f7c2;
-  border-color:#2e8b57;
-}
-  .choice:hover { border-color:#000; }
-  #nextBtn {
-    padding:10px 16px; background:#000; color:#fff;
-    border:0; border-radius:8px; cursor:pointer;
-    display:none; margin-top:20px;
-  }
-  #result {
-    font-family:monospace; font-size:20px; margin-top:30px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Undercover Game</title>
+  <style>
+    body { font-family: Arial; text-align: center; background:#f4f4f4; }
+    .container { max-width: 600px; margin: auto; padding:20px; background:white; border-radius:10px; }
+    input, button { margin:5px; padding:10px; }
+    .hidden { display:none; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Undercover</h1>
 
-<div class="container">
+    <h3>Nombre de joueurs</h3>
+    <input type="number" id="players" min="3" value="4">
 
-  <div id="questions"></div>
+    <h3>Nombre d'undercover</h3>
+    <input type="number" id="undercoverCount" min="1" value="1">
 
-  <button id="nextBtn">Continuer</button>
-  <div id="result"></div>
+    <br><br>
+    <button onclick="startGame()">Démarrer</button>
 
-</div>
+    <div id="game" class="hidden">
+      <h2 id="playerTurn"></h2>
+      <button onclick="showWord()">Voir mon mot</button>
+      <p id="word" class="hidden"></p>
+      <button onclick="nextPlayer()" id="nextBtn" class="hidden">Joueur suivant</button>
+    </div>
+  </div>
 
 <script>
-// Valeurs de scoring
-const values = {A:7, B:16.5, C:26, D:35.5, E:45.5};
 
-// Questions & réponses personnalisables
-const quizData = [
-  {
-    // Conscience
-    q: " J'ai envie de lancer un projet",
-    answers: {
-      A: "Je me lance sans réfléchir, on apprend sur le terrain !",
-      B: "Je définis les objectifs et je me lance",
-      C: "Je cherche à avoir une base théoriques",
-      D: "Je note un max d'informations ",
-      E: "Je prépare un plan précis qui contient toutes les éventualités",
-    }
-  },
-{
-      // Conscience
-  q: "Quelqu’un mentionne un hobby que je ne connais mal",
-  answers: {
-    A: "Je lui parle aussi de mes hobbys du moment",
-    B: "J'attends de voir s'il veut développer",
-    C: "Je lui poser des questions pour voir si ça peut me plaire",
-    D: "Je pose une question pour comprendre mieux ce dont il s'agit",
-    E: "Je relie ça à sa personnalité pour saisir le sens"
-  }
-  },
-  {
-        // AC
-    q: "Quelqu'un vous pose une question indiscrète :",
-    answers: {
-      A: "Je réponds pour ne pas le gêner",
-      B: "J'essaie de donner quelques éléments quand même",
-      C: "Je change de sujet",
-      D: "Je dis que je ne peux pas répondre",
-      E: "Je lui dis de ne plus me poser ce genre de question"
-    }
-  },
-  {
-            // AC
-    q: "Laquelle de ces phrases te semble la plus juste ?",
-    answers: {
-      A: "Toute information sur soi est bonne à connaitre",
-      B: "Il y a peu de choses sur soi qu'il vaut mieux ignorer",
-      C: "Certaines choses sont bonnes à connaitre et d'autres non",
-      D: "Il y a beaucoup de choses sur soi qu'il vaut mieux ignorer",
-      E: "Mieux vaut ne pas trop se connaitre"
-    }
-  },
-  {
-            // AF
-    q: "Quelqu’un veut faire quelque chose de risqué :",
-    answers: {
-      A: "Je ne dis rien et je change de sujet",
-      B: "Je lui dis qu'il fait ce qu'il veut",
-      C: "Je donne mon avis mais je le laisse faire",
-      D: "Je lui dis d’être très prudent",
-      E: "J’essaie de le décourager"
-    }
-  },
-  {
-                // AF
-    q: "Quelle phrase te décrit le mieux ?",
-    answers: {
-      A: "La procrastination ? C'est quoi ?",
-      B: "Sur une journée j'arrive à être productif au moins 60% du temps",
-      C: "Sur une journée j'arrive à être productif au moins 30% du temps",
-      D: "Je repousse très souvent ce que je devrais faire",
-      E: "Je procrastine beaucoup"
-    }
-  },
-  {
-                // F
-    q: "Laquelle de ces phrases décrit le mieux votre pensée ?",
-    answers: {
-      A: "Une bonne vie est une vie de repos et de plaisir",
-      B: "Chaque jour il faut avoir fait une petite chose",
-      C: "Dans une vie il faut équiliber activité et repos",
-      D: "Il faut avoir accompli au moins une chose importante une chose dans sa vie",
-      E: "Une bonne vie se mesure au nombre de choses qu'on a fait"
-    }
-    },
-  {
-                    // F
-    q: "J’ai une tâche importante mais qui ne m’emballe pas :",
-    answers: {
-      A: "J’oublie / je laisse tomber",
-      B: "Je repousse au maximum",
-      C: "Je fais le minimum quand il le faut",
-      D: "Je finis mais j’ai besoin qu’on me pousse",
-      E: "Je me force à la faire correctement"
-    }
-  },
-  {
-                    // PF
-    q: "Il faut préparer un travail de groupe :?",
-    answers: {
-      A: "Je laisse les autres s’en occuper",
-      B: "Je fais ma part si on me dit quoi faire",
-      C: "Je prends une partie du travail",
-      D: "Je m’organise avec les autres pour répartir les tâches",
-      E: "Je prends la tête du projet et j’avance vite"
-    }
-  },
-    {
-                      // PF
-    q: "Mes talents de motivation :",
-    answers: {
-    A: "J’ai du mal à motiver les autres ou je ne m’en sens pas capable",
-    B: "Je peux encourager un peu, mais ce n’est pas vraiment mon point fort",
-    C: "Je réfléchis à la meilleure façon de motiver et j’y arrive parfois",
-    D: "Je motive efficacement quand je m’implique vraiment",
-    E: "Je suis très doué pour motiver les autres, même dans les situations difficiles"
-    }
-  },
-    {
-                      // PC
-    q: "Les gens se confient à moi :",
-    answers: {
-      A: "Quasiment jamais",
-      B: "Rarement, et seulement pour des petites choses",
-      C: "Parfois, quand ils ont besoin",
-      D: "Souvent, même pour des sujets importants",
-      E: "Très souvent, ils me racontent tout naturellement"
-    }
-  },
-    {
-                            // PC
-    q: "Un ami me semble dans un état inhabituel :",
-    answers: {
-      A: " S'il veut m'en parler, il le fera de lui-même",
-      B: " Je lui lance une perche discrète et n'insiste pas",
-      C: "Je lui dis que s'il veut me parler il peut",
-      D: "Je lui demande frontalement si tout va bien",
-      E: "Je lui pose des tas de questions"
-    }
-  }
+// =============================
+// 🔧 PERSONNALISATION SIMPLE
+// Ajoute ici autant de paires que tu veux
+// =============================
+
+const WORD_PAIRS = [
+  ["Pikachu", "Souris"],
+  ["Chat", "Tigre"],
+  ["Voiture", "Camion"],
+  ["Pizza", "Burger"]
 ];
 
-let current = 0;
-let answers = [];
+// =============================
 
-const container = document.getElementById("questions");
+let assignments = [];
+let currentPlayer = 0;
 
-// Génération dynamique
-quizData.forEach((item, i)=>{
-  let html = `<div class="question-box" id="q${i}">
-    <div class="question">${i+1}️⃣ ${item.q}</div>
-  `;
-  for(let letter in item.answers){
-    html += `<div class="choice" data-value="${letter}">${letter} — ${item.answers[letter]}</div>`;
+function startGame() {
+  let numPlayers = parseInt(document.getElementById('players').value);
+  let undercoverCount = parseInt(document.getElementById('undercoverCount').value);
+
+  if (undercoverCount >= numPlayers) {
+    alert("Trop d'undercover !");
+    return;
   }
-  html += `</div>`;
-  container.innerHTML += html;
-});
 
-function show(n){
-  document.querySelectorAll('.question-box').forEach(q=>q.style.display="none");
-  document.getElementById("q"+n).style.display="block";
-}
-show(current);
+  let pair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
 
-document.addEventListener('click', (e)=>{
-  if(e.target.classList.contains("choice")){
-    // retire le vert sur les autres réponses de la même question
-    const parent = e.target.parentElement;
-    parent.querySelectorAll('.choice').forEach(c=>c.classList.remove('selected'));
+  // Choix aléatoire du mot majoritaire
+  let majorityIndex = Math.floor(Math.random() * 2);
+  let minorityIndex = majorityIndex === 0 ? 1 : 0;
 
-    // ajoute le surlignage vert
-    e.target.classList.add("selected");
+  assignments = new Array(numPlayers).fill(pair[majorityIndex]);
 
-    let letter = e.target.dataset.value;
-    answers[current] = values[letter];
-    document.getElementById("nextBtn").style.display="inline-block";
-  }
-});
-
-
-document.getElementById("nextBtn").addEventListener("click", ()=>{
-  current++;
-  document.getElementById("nextBtn").style.display="none";
-  if(current < quizData.length){
-    show(current);
-  } else {
-    document.querySelectorAll('.question-box').forEach(q=>q.style.display="none");
-
-    // Calcul final par paire
-    let result = [];
-    for(let i=0;i<12;i+=2){
-      result.push(answers[i] + answers[i+1]);
+  // Tirage des undercover uniques
+  let indices = [];
+  while(indices.length < undercoverCount) {
+    let rand = Math.floor(Math.random() * numPlayers);
+    if(!indices.includes(rand)) {
+      indices.push(rand);
     }
-
-    document.getElementById("result").textContent = "[" + result.join(", ") + "]";
   }
-});
-</script>
 
+  // Attribution mot minoritaire
+  indices.forEach(i => {
+    assignments[i] = pair[minorityIndex];
+  });
+
+  currentPlayer = 0;
+  document.getElementById('game').classList.remove('hidden');
+  updateTurn();
+}
+
+function updateTurn() {
+  document.getElementById('playerTurn').textContent = "Joueur " + (currentPlayer + 1);
+  document.getElementById('word').classList.add('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+}
+
+function showWord() {
+  document.getElementById('word').textContent = assignments[currentPlayer];
+  document.getElementById('word').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function nextPlayer() {
+  currentPlayer++;
+  if(currentPlayer >= assignments.length) {
+    alert("Tous les joueurs ont vu leur mot !");
+    location.reload();
+    return;
+  }
+  updateTurn();
+}
+
+</script>
 </body>
 </html>
