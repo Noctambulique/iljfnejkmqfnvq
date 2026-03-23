@@ -1,76 +1,94 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Undercover Game</title>
-  <style>
-    body { font-family: Arial; text-align: center; background:#f4f4f4; }
-    .container { max-width: 600px; margin: auto; padding:20px; background:white; border-radius:10px; }
-    input, button { margin:5px; padding:10px; }
-    .hidden { display:none; }
-  </style>
+<meta charset="UTF-8">
+<title>Undercover Game</title>
+<style>
+body { font-family: Arial; text-align: center; background:#f4f4f4; }
+.container { max-width: 600px; margin: auto; padding:20px; background:white; border-radius:10px; }
+input, button { margin:5px; padding:10px; }
+.hidden { display:none; }
+.numbers { display:flex; flex-wrap:wrap; justify-content:center; }
+.numbers label { margin:5px; }
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Undercover</h1>
+<div class="container">
+<h1>Undercover</h1>
 
-    <h3>Nombre de joueurs</h3>
-    <input type="number" id="players" min="3" value="4">
+<h3>Nombre de joueurs</h3>
+<input type="number" id="players" min="3" value="4">
 
-    <h3>Nombre d'undercover</h3>
-    <input type="number" id="undercoverCount" min="1" value="1">
+<h3>Nombre d'undercover</h3>
+<input type="number" id="undercoverCount" min="1" value="1">
 
-    <br><br>
-    <button onclick="startGame()">Démarrer</button>
+<h3>Chiffres à EXCLURE</h3>
+<div class="numbers" id="numberSelector"></div>
 
-    <div id="game" class="hidden">
-      <h2 id="playerTurn"></h2>
-      <button onclick="showWord()">Voir mon mot</button>
-      <p id="word" class="hidden"></p>
-      <button onclick="nextPlayer()" id="nextBtn" class="hidden">Joueur suivant</button>
-    </div>
-  </div>
+<br>
+<button onclick="startGame()">Démarrer</button>
+
+<div id="game" class="hidden">
+<h2 id="playerTurn"></h2>
+<button onclick="showWord()">Voir mon mot</button>
+<p id="word" class="hidden"></p>
+<button onclick="nextPlayer()" id="nextBtn" class="hidden">Joueur suivant</button>
+</div>
+</div>
 
 <script>
 
 // =============================
-// 🔧 PERSONNALISATION SIMPLE
-// Ajoute ici autant de paires que tu veux
+// 🔧 PAIRES + NUMÉROS
 // =============================
-
 const WORD_PAIRS = [
-  ["Staline", "Hitler"],
-  ["Hisoka", "Epstein"],
-  ["Bouddha", "Yoda"],
-  ["Monsieur Propre", "Saitama"],
-  ["Jinbei", "Kisame"],
-  ["Itachi", "Sasuke"],
-  ["Crocodile - One Pièce", "Gaara"],
-  ["Doflamingo", "Hisoka"],
-  ["Pinochio", "Usopp"],
-  ["Alcool", "Shit - la drogue"],
-  ["Wotling", "Leru"],
-  ["Diogène", "SDF"],
-  ["Platon", "Socrate"],
-  ["Basse - le prof", "Ansaldi"],
-  ["Nami", "Robin"],
-  ["Hinata", "Neji"],
-  ["Sasuke Naruto", "Kurapika Hunter x Hunter"],
-  ["Abella Danger", "Mia Khalifa"],
-  ["Light Death Note", "Eren attaque des titans"],
-  ["Sasuke", "Kirua Hunter x Hunter"],
-  ["Boruto", "Naruto"],
-  ["Sasuke", "Kirua Hunter x Hunter"],
-  ["Epicure", "Epictete"],
-  ["Socrate", "Diogène"],
-  ["Kant", "Hegel"],
-  ["Camus", "Sartre"]
+  {pair:["Staline","Hitler"], number:1},
+  {pair:["Hisoka","Epstein"], number:2},
+  {pair:["Bouddha","Yoda"], number:3},
+  {pair:["Monsieur Propre","Saitama"], number:4},
+  {pair:["Jinbei","Kisame"], number:5},
+  {pair:["Itachi","Sasuke"], number:6},
+  {pair:["Crocodile","Gaara"], number:7},
+  {pair:["Doflamingo","Hisoka"], number:8},
+  {pair:["Pinocchio","Usopp"], number:9},
+  {pair:["Alcool","Shit"], number:10},
+  {pair:["Diogène","SDF"], number:11},
+  {pair:["Platon","Socrate"], number:12},
+  {pair:["Nami","Robin"], number:13},
+  {pair:["Hinata","Neji"], number:14},
+  {pair:["Light","Eren"], number:15},
+  {pair:["Sasuke","Kirua"], number:16},
+  {pair:["Boruto","Naruto"], number:17},
+  {pair:["Epicure","Epictete"], number:18},
+  {pair:["Kant","Hegel"], number:19},
+  {pair:["Camus","Sartre"], number:20}
 ];
 
 // =============================
 
 let assignments = [];
 let currentPlayer = 0;
+
+// Générer les cases à cocher
+function generateNumberSelector() {
+  let container = document.getElementById("numberSelector");
+  WORD_PAIRS.forEach(obj => {
+    let label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" value="${obj.number}"> ${obj.number}`;
+    container.appendChild(label);
+  });
+}
+generateNumberSelector();
+
+// Mélange ultra aléatoire (Fisher-Yates)
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 function startGame() {
   let numPlayers = parseInt(document.getElementById('players').value);
@@ -81,27 +99,40 @@ function startGame() {
     return;
   }
 
-  let pair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+  // Récupérer chiffres exclus
+  let excluded = Array.from(document.querySelectorAll("#numberSelector input:checked"))
+                      .map(cb => parseInt(cb.value));
 
-  // Choix aléatoire du mot majoritaire
-  let majorityIndex = Math.floor(Math.random() * 2);
-  let minorityIndex = majorityIndex === 0 ? 1 : 0;
+  let availablePairs = WORD_PAIRS.filter(p => !excluded.includes(p.number));
 
-  assignments = new Array(numPlayers).fill(pair[majorityIndex]);
-
-  // Tirage des undercover uniques
-  let indices = [];
-  while(indices.length < undercoverCount) {
-    let rand = Math.floor(Math.random() * numPlayers);
-    if(!indices.includes(rand)) {
-      indices.push(rand);
-    }
+  if (availablePairs.length === 0) {
+    alert("Tous les chiffres sont exclus !");
+    return;
   }
 
-  // Attribution mot minoritaire
-  indices.forEach(i => {
-    assignments[i] = pair[minorityIndex];
-  });
+  // Tirage aléatoire fort
+  let selected = availablePairs[Math.floor(Math.random() * availablePairs.length)];
+  let pair = selected.pair;
+  let number = selected.number;
+
+  let roles = [];
+
+  // Construire rôles
+  for (let i = 0; i < numPlayers - undercoverCount; i++) {
+    roles.push(pair[0]);
+  }
+  for (let i = 0; i < undercoverCount; i++) {
+    roles.push(pair[1]);
+  }
+
+  // Mélange complet des rôles (super important)
+  assignments = shuffle(roles);
+
+  // Mélange encore pour casser tout biais
+  assignments = shuffle(assignments);
+
+  // Ajouter le chiffre à chaque mot
+  assignments = assignments.map(word => word + " (" + number + ")");
 
   currentPlayer = 0;
   document.getElementById('game').classList.remove('hidden');
