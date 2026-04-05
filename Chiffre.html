@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Générateur minimal</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #number {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    #text {
+      font-size: 18px;
+      opacity: 0.7;
+      max-width: 400px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 1px solid black;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: black;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="number"></div>
+  <div id="text"></div>
+  <button onclick="changer()">Changer</button>
+
+  <script>
+    const phrases = [
+      "Le hasard fait bien les choses.",
+      "Chaque instant est unique.",
+      "Rien n'est écrit d'avance.",
+      "Le possible dépasse le réel.",
+      "Tout commence ici.",
+      "Le doute est fertile.",
+      "Créer, c'est choisir.",
+      "Le simple est profond."
+    ];
+
+    function nombreAleatoire() {
+      return Math.floor(Math.random() * 10);
+    }
+
+    function phraseAleatoire() {
+      return phrases[Math.floor(Math.random() * phrases.length)];
+    }
+
+    function changer() {
+      document.getElementById("number").textContent = nombreAleatoire();
+      document.getElementById("text").textContent = phraseAleatoire();
+    }
+
+    // Initialisation
+    changer();
+  </script>
+
+</body>
+</html>
