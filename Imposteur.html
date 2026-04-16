@@ -87,7 +87,7 @@ button:hover {
 // 🔧 PAIRES + NUMÉROS
 // =============================
 const WORD_PAIRS = [
-  {pair:["Zélie","Hélène"], number:1},
+  {pair:["Zélie","Sylvie"], number:1},
   {pair:["Jean Claude","François"], number:2},
   {pair:["Rose","Zélie"], number:3},
   {pair:["Noé","Samuel"], number:4},
@@ -96,12 +96,11 @@ const WORD_PAIRS = [
   {pair:["Ernest","Noé"], number:7},
   {pair:["Olive","Antoine"], number:8},
   {pair:["Octave","Nathan"], number:9},
-  {pair:["Noé","Rose"], number:10},
+  {pair:["Hélène","Marion"], number:10},
   {pair:["Julie","Marion"], number:11},
-  {pair:["Samuel","Ronaldo"], number:12},
+  {pair:["Antoine","Jean Claude"], number:12},
   {pair:["Noé","Nathan"], number:13},
   {pair:["François","Antoine"], number:14},
-  {pair:["Antoine","Jean Claude"], number:15},
 ];
 
 let assignments = [];
@@ -173,7 +172,7 @@ function startGame() {
   assignments = shuffle(assignments);
 
   assignments = assignments.map(word => {
-    if (word === null) return "🤍 Mr White (aucun mot)";
+    if (word === null) return "Mr White (aucun mot)";
     return word + " (" + number + ")";
   });
 
