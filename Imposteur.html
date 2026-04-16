@@ -3,17 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <title>Undercover Game</title>
+
 <style>
-body { font-family: Arial; text-align: center; background:#f4f4f4; }
-.container { max-width: 600px; margin: auto; padding:20px; background:white; border-radius:10px; }
-input, button { margin:5px; padding:10px; }
+body {
+  font-family: Arial;
+  text-align: center;
+  background:#f4f4f4;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding:20px;
+  background:white;
+  border-radius:10px;
+}
+
+/* 🔥 Boutons + inputs agrandis */
+input, button {
+  margin:8px;
+  padding:14px;
+  font-size:16px;
+  border-radius:8px;
+}
+
+button {
+  cursor:pointer;
+  background:#007BFF;
+  color:white;
+  border:none;
+}
+
+button:hover {
+  background:#0056b3;
+}
+
 .hidden { display:none; }
-.numbers { display:flex; flex-wrap:wrap; justify-content:center; }
-.numbers label { margin:5px; }
+
+.numbers {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.numbers label {
+  margin:5px;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
+
 <div class="container">
 <h1>Undercover</h1>
 
@@ -23,6 +64,9 @@ input, button { margin:5px; padding:10px; }
 <h3>Nombre d'undercover</h3>
 <input type="number" id="undercoverCount" min="1" value="1">
 
+<h3>Nombre de Mr White</h3>
+<input type="number" id="whiteCount" min="0" value="0">
+
 <h3>Chiffres à EXCLURE</h3>
 <div class="numbers" id="numberSelector"></div>
 
@@ -30,10 +74,10 @@ input, button { margin:5px; padding:10px; }
 <button onclick="startGame()">Démarrer</button>
 
 <div id="game" class="hidden">
-<h2 id="playerTurn"></h2>
-<button onclick="showWord()">Voir mon mot</button>
-<p id="word" class="hidden"></p>
-<button onclick="nextPlayer()" id="nextBtn" class="hidden">Joueur suivant</button>
+  <h2 id="playerTurn"></h2>
+  <button onclick="showWord()">Voir mon mot</button>
+  <p id="word" class="hidden" style="font-size:20px; font-weight:bold;"></p>
+  <button onclick="nextPlayer()" id="nextBtn" class="hidden">Joueur suivant</button>
 </div>
 </div>
 
@@ -44,13 +88,13 @@ input, button { margin:5px; padding:10px; }
 // =============================
 const WORD_PAIRS = [
   {pair:["Zélie","Hélène"], number:1},
-  {pair:["Hélène","Rose"], number:2},
+  {pair:["Jean Claude","François"], number:2},
   {pair:["Rose","Zélie"], number:3},
   {pair:["Noé","Samuel"], number:4},
   {pair:["Noé","Octave"], number:5},
-  {pair:["Samuel","Octave"], number:6},
+  {pair:["François avant Ce soir","François après ce soir"], number:6},
   {pair:["Ernest","Noé"], number:7},
-  {pair:["Ernest","Octave"], number:8},
+  {pair:["Olive","Antoine"], number:8},
   {pair:["Octave","Nathan"], number:9},
   {pair:["Noé","Rose"], number:10},
   {pair:["Julie","Marion"], number:11},
@@ -58,10 +102,7 @@ const WORD_PAIRS = [
   {pair:["Noé","Nathan"], number:13},
   {pair:["François","Antoine"], number:14},
   {pair:["Antoine","Jean Claude"], number:15},
-  {pair:["Olive","Antoine"], number:16},
 ];
-
-// =============================
 
 let assignments = [];
 let currentPlayer = 0;
@@ -77,7 +118,7 @@ function generateNumberSelector() {
 }
 generateNumberSelector();
 
-// Mélange ultra aléatoire (Fisher-Yates)
+// Mélange Fisher-Yates
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1));
@@ -89,13 +130,14 @@ function shuffle(array) {
 function startGame() {
   let numPlayers = parseInt(document.getElementById('players').value);
   let undercoverCount = parseInt(document.getElementById('undercoverCount').value);
+  let whiteCount = parseInt(document.getElementById('whiteCount').value);
 
-  if (undercoverCount >= numPlayers) {
-    alert("Trop d'undercover !");
+  if (undercoverCount + whiteCount >= numPlayers) {
+    alert("Trop de rôles spéciaux !");
     return;
   }
 
-  // Récupérer chiffres exclus
+  // Exclusions
   let excluded = Array.from(document.querySelectorAll("#numberSelector input:checked"))
                       .map(cb => parseInt(cb.value));
 
@@ -106,29 +148,34 @@ function startGame() {
     return;
   }
 
-  // Tirage aléatoire fort
   let selected = availablePairs[Math.floor(Math.random() * availablePairs.length)];
   let pair = selected.pair;
   let number = selected.number;
 
   let roles = [];
 
-  // Construire rôles
-  for (let i = 0; i < numPlayers - undercoverCount; i++) {
+  // Civils
+  for (let i = 0; i < numPlayers - undercoverCount - whiteCount; i++) {
     roles.push(pair[0]);
   }
+
+  // Undercover
   for (let i = 0; i < undercoverCount; i++) {
     roles.push(pair[1]);
   }
 
-  // Mélange complet des rôles (super important)
-  assignments = shuffle(roles);
+  // Mr White
+  for (let i = 0; i < whiteCount; i++) {
+    roles.push(null);
+  }
 
-  // Mélange encore pour casser tout biais
+  assignments = shuffle(roles);
   assignments = shuffle(assignments);
 
-  // Ajouter le chiffre à chaque mot
-  assignments = assignments.map(word => word + " (" + number + ")");
+  assignments = assignments.map(word => {
+    if (word === null) return "🤍 Mr White (aucun mot)";
+    return word + " (" + number + ")";
+  });
 
   currentPlayer = 0;
   document.getElementById('game').classList.remove('hidden');
@@ -158,5 +205,6 @@ function nextPlayer() {
 }
 
 </script>
+
 </body>
 </html>
